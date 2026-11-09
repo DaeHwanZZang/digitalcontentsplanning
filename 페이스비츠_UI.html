@@ -246,8 +246,8 @@
         <div style="display:grid;gap:10px;margin-top:16px" data-n="1">
           <div class="card sel"><div class="row"><b style="font-size:19px">기본 인터벌</b><span class="lbl">30분</span></div><p class="sub" style="font-size:14px;margin:4px 0 10px">고강도 3분 + 조깅 2분 × 4회</p>
             <div class="seg" data-n="2"><i class="w" style="flex:5"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="w" style="flex:5"></i></div></div>
-          <div class="card"><div class="row"><b style="font-size:19px">스피드</b><span class="lbl">28분</span></div><p class="sub" style="font-size:14px;margin-top:4px">고강도 1분 + 조깅 1분 × 8회</p></div>
-          <div class="card"><div class="row"><b style="font-size:19px">지구력</b><span class="lbl">47분</span></div><p class="sub" style="font-size:14px;margin-top:4px">고강도 5분 + 조깅 3분 × 4회</p></div>
+          <div class="card"><div class="row"><b style="font-size:19px">스피드</b><span class="lbl">26분</span></div><p class="sub" style="font-size:14px;margin-top:4px">고강도 1분 + 조깅 1분 × 8회</p></div>
+          <div class="card"><div class="row"><b style="font-size:19px">지구력</b><span class="lbl">42분</span></div><p class="sub" style="font-size:14px;margin-top:4px">고강도 5분 + 조깅 3분 × 4회</p></div>
         </div>
         <div class="card row" style="margin-top:10px" data-n="3"><span class="lbl">고강도 목표</span><div class="step"><button type="button" data-step="-1" aria-label="1 감소">−</button><b class="num" data-s="hiVal" style="font-size:22px;color:var(--coral);min-width:96px;text-align:center">178 SPM</b><button type="button" data-step="1" aria-label="1 증가">+</button></div></div>
         <div class="grow"></div>
@@ -868,7 +868,7 @@
         goPhone({ auto: 'P-07', guide: 'P-05', interval: 'P-06' }[S.mode]); return;
       }
       var gs = e.target.closest('[data-gstep]');
-      if (gs) { S.gt = clamp(S.gt + (+gs.dataset.gstep), 170, 190); render(); return; }
+      if (gs) { S.gt = clamp(S.gt + (+gs.dataset.gstep), 150, 190); S.gs = Math.min(168, S.gt - 7); render(); return; }
       var st = e.target.closest('[data-step]');
       if (st) { S.hi = clamp(S.hi + (+st.dataset.step), 160, 195); render(); }
     });
