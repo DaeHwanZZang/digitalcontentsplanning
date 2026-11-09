@@ -1,0 +1,584 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페이스비츠 발표자료</title>
+<style>
+  @font-face { font-family: "Nanum Gothic"; font-weight: 400; font-style: normal; src: url("assets/fonts/NanumGothic-Regular.ttf") format("truetype"); }
+  @font-face { font-family: "Nanum Gothic"; font-weight: 700; font-style: normal; src: url("assets/fonts/NanumGothic-Bold.ttf") format("truetype"); }
+  @font-face { font-family: "Nanum Gothic"; font-weight: 800; font-style: normal; src: url("assets/fonts/NanumGothic-ExtraBold.ttf") format("truetype"); }
+  :root {
+    --ink: #14161A; --muted: #4B5260; --soft: #F1F3F5; --line: #C9CED6; --white: #FFFFFF;
+    --volt: #D4FF3A; --coral: #FF5A3C; --sky: #5CC8FF; --mark: #2F6BFF;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; background: #000; }
+  body {
+    font-family: "Nanum Gothic", sans-serif;
+    color: var(--ink); word-break: keep-all; overflow: hidden;
+    -webkit-font-smoothing: antialiased;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+  #stage { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; transform-origin: 0 0; background: var(--white); }
+  .slide { position: absolute; inset: 0; display: flex; visibility: hidden; flex-direction: column; padding: 48px 64px 52px; background: var(--white); overflow: hidden; }
+  .slide.on { visibility: visible; }
+  .slide.dark { background: var(--ink); color: var(--white); }
+  .eyebrow { font-size: 19px; font-weight: 700; color: var(--muted); }
+  h2 { font-size: 44px; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; margin: 4px 0 26px; }
+  h3 { font-size: 28px; font-weight: 800; }
+  .fill { flex: 1; min-height: 0; }
+  .pn { position: absolute; right: 64px; bottom: 18px; font-size: 16px; color: var(--muted); }
+  .dark .pn { color: var(--line); }
+  .src { font-size: 16px; color: var(--muted); margin-top: 12px; }
+  .card { background: var(--soft); border-radius: 16px; padding: 24px 28px; }
+  .card.ink { background: var(--ink); color: var(--white); }
+  .card.volt { background: var(--volt); }
+  .badge { flex: none; display: flex; align-items: center; justify-content: center; width: 68px; height: 68px; border-radius: 50%; font-size: 24px; font-weight: 800; color: var(--ink); }
+  .sm { width: 54px; height: 54px; font-size: 20px; }
+  .bg-volt { background: var(--volt); } .bg-coral { background: var(--coral); } .bg-sky { background: var(--sky); } .bg-grey { background: var(--line); }
+  .head { display: flex; align-items: center; gap: 18px; }
+  .t-muted { color: var(--muted); }
+  .grid { display: grid; gap: 22px; }
+  ul.b { padding-left: 26px; font-size: 24px; line-height: 1.6; }
+  p.d { font-size: 22px; line-height: 1.45; color: var(--muted); }
+  .card.ink p.d { color: var(--white); }
+  .card.volt p.d { color: var(--ink); }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { border: 1px solid var(--line); padding: 10px 14px; text-align: left; vertical-align: middle; font-size: 21px; line-height: 1.3; }
+  th { background: var(--ink); color: var(--white); border-color: var(--ink); font-weight: 700; }
+  tr.hl td { background: var(--volt); font-weight: 700; }
+  td.n { font-weight: 700; }
+
+  /* 표지·마무리 */
+  .beats { width: 500px; height: 110px; display: block; }
+  .cover h1 { font-size: 104px; font-weight: 800; letter-spacing: -.02em; margin-top: 34px; }
+  .cover .lead { font-size: 34px; color: var(--line); margin-top: 22px; }
+
+  /* 목차 */
+  .toc { display: grid; grid-template-rows: repeat(4, 1fr); gap: 18px; }
+  .toc .card { display: grid; grid-template-columns: 90px 460px 1fr 100px; align-items: center; }
+  .toc b { font-size: 34px; }
+  .toc span { font-size: 24px; color: var(--muted); }
+  .toc em { font-size: 24px; font-style: normal; font-weight: 700; text-align: right; }
+
+  .stat { font-size: 62px; font-weight: 800; letter-spacing: -.02em; line-height: 1.15; }
+
+  /* 스토리보드 */
+  .meta { display: grid; grid-template-columns: 100px 220px 100px 370px 110px 1fr; border: 1px solid var(--line); font-size: 18px; margin-bottom: 10px; }
+  .meta b { background: var(--ink); color: var(--white); text-align: center; padding: 7px 0; }
+  .meta span { padding: 7px 12px; }
+  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .sb-label { background: var(--ink); color: var(--white); font-size: 19px; font-weight: 700; padding: 6px 12px; }
+  .sb-panel { height: 408px; background: var(--soft); display: flex; align-items: center; justify-content: center; }
+  .device { flex: none; overflow: hidden; }
+  .device img { display: block; width: 100%; height: 100%; }
+  .desc { list-style: none; font-size: 18px; }
+  .desc li { display: grid; grid-template-columns: 38px 1fr; align-items: center; min-height: 36px; }
+  .desc li:nth-child(odd) { background: var(--soft); }
+  .desc b { text-align: center; }
+
+  .flow td, .flow th { font-size: 18.5px; padding: 8px 12px; height: 61px; }
+  .flow td:first-child { font-weight: 700; }
+  .ia { display: grid; grid-template-columns: repeat(6, 1fr); gap: 28px; }
+  .ia div { position: relative; display: flex; align-items: center; justify-content: center; text-align: center; height: 100px; border-radius: 12px; font-size: 20px; font-weight: 700; line-height: 1.3; }
+  .ia div:not(:last-child)::after { content: "›"; position: absolute; right: -21px; font-size: 30px; font-weight: 800; color: var(--ink); }
+  .ia .e { visibility: hidden; }
+  .big p.d { font-size: 27px; }
+  .big ul.b { font-size: 29px; line-height: 1.65; }
+  .big .card { display: flex; flex-direction: column; justify-content: center; }
+  .swot ul.b { font-size: 23px; line-height: 1.5; }
+  .center-cards .card { display: flex; flex-direction: column; justify-content: center; }
+  .kbf th, .kbf td { text-align: center; height: 62px; font-size: 24px; }
+  .kbf th { font-size: 21px; height: 50px; }
+  .kbf td.n, .kbf tr.me td:first-child { text-align: left; font-size: 22px; font-weight: 700; }
+  .kbf .s1 { background: #F1F3F5; } .kbf .s2 { background: #ECF5C9; } .kbf .s3 { background: #E3F797; } .kbf .s4 { background: #D4FF3A; } .kbf .s5 { background: #B5E000; font-weight: 800; }
+  .kbf tr.me td { border-top: 3px solid var(--ink); border-bottom: 3px solid var(--ink); }
+  .fly { display: flex; align-items: center; gap: 10px; margin-top: 12px; font-size: 22px; font-weight: 700; }
+  .fly span { background: #2B2F36; border-radius: 10px; padding: 12px 16px; }
+  .fly i { font-style: normal; color: var(--volt); font-size: 28px; }
+  .type th, .type td { font-size: 20px; padding: 8px 10px; height: 60px; }
+  .type th { height: 44px; }
+  .sw { display: flex; flex-direction: column; justify-content: center; padding: 8px 18px; }
+  .sw b { font-size: 24px; } .sw span { font-size: 17px; }
+
+  /* 조작부 */
+  #nav { position: fixed; left: 50%; transform: translateX(-50%); bottom: 12px; display: flex; gap: 6px; align-items: center; color: #fff; font-size: 14px; background: rgba(20,22,26,.72); padding: 5px 8px; border-radius: 10px; opacity: 0; transition: opacity .15s; }
+  body.active #nav, #nav:hover, #nav:focus-within { opacity: 1; }
+  #nav button { font: inherit; color: #fff; background: #3A3E46; border: 0; border-radius: 6px; width: 34px; height: 30px; cursor: pointer; }
+  #count { min-width: 56px; text-align: center; }
+
+  @page { size: 1600px 900px; margin: 0; }
+  @media print {
+    html, body { height: auto; overflow: visible; background: #fff; }
+    #stage { position: static; transform: none !important; height: auto; }
+    .slide { position: relative; inset: auto; visibility: visible !important; width: 1600px; height: 900px; break-after: page; }
+    #nav { display: none; }
+  }
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="beats" viewBox="0 0 340 90" preserveAspectRatio="xMinYMid meet"><g fill="#D4FF3A"><rect x="0" y="40" width="10" height="16" rx="5"/><rect x="24" y="28" width="10" height="40" rx="5"/><rect x="48" y="14" width="10" height="68" rx="5"/><rect x="72" y="34" width="10" height="28" rx="5"/><rect x="96" y="20" width="10" height="56" rx="5"/><rect x="120" y="4" width="10" height="86" rx="5"/><rect x="144" y="30" width="10" height="36" rx="5"/><rect x="168" y="16" width="10" height="64" rx="5"/><rect x="192" y="36" width="10" height="24" rx="5"/><rect x="216" y="10" width="10" height="76" rx="5"/><rect x="240" y="26" width="10" height="44" rx="5"/><rect x="264" y="38" width="10" height="20" rx="5"/><rect x="288" y="22" width="10" height="52" rx="5"/><rect x="312" y="34" width="10" height="28" rx="5"/></g></symbol>
+</svg>
+
+<main id="stage">
+
+  <section class="slide dark cover" style="padding:96px 96px 72px">
+    <svg class="beats"><use href="#beats"/></svg>
+    <h1>페이스비츠</h1>
+    <p class="lead">러닝 케이던스에 맞춰 음악을 선곡하는 iPhone·Galaxy·스마트워치 콘텐츠 기획안</p>
+    <div class="fill"></div>
+    <p style="font-size:24px">디지털 콘텐츠 기획 기말고사 &nbsp;|&nbsp; 김대환, 안태현</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">CONTENTS</div>
+    <h2>목차</h2>
+    <div class="toc fill">
+      <div class="card"><div class="badge bg-volt sm">01</div><b>프로젝트 개요</b><span>용어 정리, 배경, 목표와 저작물의 형식, 내용, 타깃</span><em>3–7</em></div>
+      <div class="card"><div class="badge bg-volt sm">02</div><b>프로젝트 세부 분석</b><span>인접 서비스, 구매 요인, 포지셔닝, SWOT, 경쟁력</span><em>8–13</em></div>
+      <div class="card"><div class="badge bg-volt sm">03</div><b>프로젝트 컨셉안</b><span>톤앤매너, 타입, 주요 내용, 전체 플로우</span><em>14–16</em></div>
+      <div class="card"><div class="badge bg-volt sm">04</div><b>프로젝트 상세기획</b><span>화면 구조, iPhone·Apple Watch 스토리보드</span><em>17–23</em></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">01 프로젝트 개요</div>
+    <h2>용어정리</h2>
+    <div class="grid fill" style="grid-template-columns:repeat(4,1fr);grid-template-rows:1fr 1fr 150px;gap:18px">
+      <div class="card"><h3>케이던스</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Cadence</div><p class="d">1분 동안 내딛는 발걸음 수. 러닝 속도와 효율의 기본 지표다.</p></div>
+      <div class="card"><h3>SPM</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Steps Per Minute</div><p class="d">케이던스의 단위. 172 SPM은 1분에 172걸음을 뜻한다.</p></div>
+      <div class="card"><h3>BPM</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Beats Per Minute</div><p class="d">곡의 분당 박자 수. 174 BPM 곡은 1분에 174박이다.</p></div>
+      <div class="card"><h3>BPM 일치율</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Sync Rate</div><p class="d">재생 시간 중 곡 BPM이 내 SPM과 ±3 이내였던 비율. 목표는 70% 이상이다.</p></div>
+      <div class="card"><h3>페이스</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Pace</div><p class="d">1km를 달리는 데 걸리는 시간. 5'50"/km는 1km에 5분 50초다.</p></div>
+      <div class="card"><h3>하프타임</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Half-time</div><p class="d">곡 BPM의 절반을 2박으로 읽어 맞추는 방식. 86 BPM 곡은 172 SPM과 맞는다.</p></div>
+      <div class="card"><h3>Energy</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">곡의 강도</div><p class="d">곡이 주는 에너지 수준(상·중·하). 인터벌 고강도 구간에는 높은 Energy 곡을 고른다.</p></div>
+      <div class="card"><h3>리듬 유지 점수</h3><div class="t-muted" style="font-size:18px;margin:2px 0 10px">Rhythm Score</div><p class="d">곡을 듣는 동안 케이던스가 안정적으로 유지된 정도. 다음 선곡에 반영한다.</p></div>
+      <div class="card ink" style="grid-column:1 / -1;display:flex;align-items:center;justify-content:center;gap:40px"><div style="font-size:40px;font-weight:800;color:var(--volt);white-space:nowrap">SPM ≈ BPM</div><p class="d" style="font-size:25px">내 발걸음과 곡의 박자가 같으면 발걸음이 곧 박자가 된다. 예) 172 SPM으로 달리면 172 BPM 곡을 고른다.</p></div>
+    </div>
+  </section>
+
+  <section class="slide big">
+    <div class="eyebrow">01 프로젝트 개요</div>
+    <h2>프로젝트 배경</h2>
+    <div class="grid fill" style="grid-template-columns:480px 1fr;gap:56px">
+      <div class="grid" style="grid-template-rows:1fr 1fr">
+        <div class="card ink" style="display:flex;flex-direction:column;justify-content:center"><div class="stat" style="color:var(--volt)">약 1,000만 명</div><p class="d" style="margin-top:12px">국내 러닝 인구 (업계 추정치)</p></div>
+        <div class="card" style="display:flex;flex-direction:column;justify-content:center"><div class="stat">430개 이상</div><p class="d" style="margin-top:12px">2025년 국내 마라톤 대회 수<br>2020년 40개 미만에서 증가</p></div>
+      </div>
+      <div class="grid" style="grid-template-rows:repeat(3,1fr);align-items:center">
+        <div class="head"><div class="badge bg-coral">1</div><div><h3>리듬이 끊긴다</h3><p class="d" style="margin-top:6px">달리는 중 휴대폰을 꺼내 곡을 넘기면 페이스와 집중이 흐트러진다.</p></div></div>
+        <div class="head"><div class="badge bg-coral">2</div><div><h3>박자가 맞지 않는다</h3><p class="d" style="margin-top:6px">고정 플레이리스트는 그날의 케이던스와 곡의 BPM을 맞춰 주지 않는다.</p></div></div>
+        <div class="head"><div class="badge bg-coral">3</div><div><h3>손목에서 끝나지 않는다</h3><p class="d" style="margin-top:6px">러닝 지표는 워치에서 보지만 선곡과 음악 제어는 분리되어 있다.</p></div></div>
+      </div>
+    </div>
+    <p class="src">출처: 2025년 국내 언론 보도 종합 (한국경제, 데일리안, 뉴시스 등)</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">01 프로젝트 개요</div>
+    <h2>프로젝트 목표</h2>
+    <div class="grid fill" style="grid-template-columns:1.25fr 1fr;gap:40px">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <h3>프로젝트 목표</h3>
+        <div class="grid fill" style="grid-template-rows:repeat(3,1fr);gap:16px">
+          <div class="card" style="display:grid;grid-template-columns:170px 1fr;align-items:center"><div class="stat" style="font-size:54px">70%</div><div><b style="font-size:26px">케이던스-음악 동기화</b><p class="d">재생 시간의 70% 이상을 현재 케이던스 ±3 BPM 안에서 재생한다.</p></div></div>
+          <div class="card" style="display:grid;grid-template-columns:170px 1fr;align-items:center"><div class="stat" style="font-size:54px">1회</div><div><b style="font-size:26px">러닝 몰입</b><p class="d">러닝 중 수동 음악 조작을 세션당 1회 이하로 줄인다.</p></div></div>
+          <div class="card" style="display:grid;grid-template-columns:170px 1fr;align-items:center"><div class="stat" style="font-size:54px">68+</div><div><b style="font-size:26px">사용성</b><p class="d">휴대폰과 워치를 함께 쓰는 사용성 SUS 68점 이상을 목표로 한다.</p></div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <h3>저작물의 형식</h3>
+        <div class="card ink fill grid" style="grid-template-rows:repeat(4,1fr);align-items:center;gap:6px">
+          <div><b style="color:var(--volt);font-size:20px">매체</b><p class="d">iPhone·Galaxy + Apple Watch·Galaxy Watch, 무선 이어폰</p></div>
+          <div><b style="color:var(--volt);font-size:20px">형식</b><p class="d">모바일 애플리케이션과 워치 앱의 UI 프로토타입</p></div>
+          <div><b style="color:var(--volt);font-size:20px">화면</b><p class="d">iPhone 12개, Apple Watch 8개 (Galaxy는 같은 구조 적용)</p></div>
+          <div><b style="color:var(--volt);font-size:20px">구현 범위</b><p class="d">샘플 데이터로 화면 이동을 체험하는 UI 구현</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="slide big">
+    <div class="eyebrow">01 프로젝트 개요</div>
+    <h2>주요 기능</h2>
+    <div class="grid fill" style="grid-template-columns:repeat(3,1fr);grid-template-rows:1fr 1fr">
+      <div class="card"><div class="head"><div class="badge bg-volt sm">1</div><h3>오토 싱크</h3></div><p class="d" style="margin-top:18px">현재 케이던스에 맞는 곡을 ±3 BPM 범위에서 골라 다음 곡으로 재생한다.</p></div>
+      <div class="card"><div class="head"><div class="badge bg-volt sm">2</div><h3>케이던스 유도</h3></div><p class="d" style="margin-top:18px">목표 SPM을 정하면 곡마다 +2~3 SPM씩 올려 청각적으로 이끈다.</p></div>
+      <div class="card"><div class="head"><div class="badge bg-coral sm">3</div><h3>인터벌</h3></div><p class="d" style="margin-top:18px">구간 전환에 맞춰 음성, 진동, 곡이 함께 바뀐다.</p></div>
+      <div class="card"><div class="head"><div class="badge bg-sky sm">4</div><h3>리듬 반응 개인화</h3></div><p class="d" style="margin-top:18px">장르와 청취 기록에 더해 곡별 리듬 유지 기록을 선곡에 반영한다.</p></div>
+      <div class="card"><div class="head"><div class="badge bg-sky sm">5</div><h3>리포트·크루 챌린지</h3></div><p class="d" style="margin-top:18px">러닝 기록을 공유 카드로 만들고 크루 단위 BPM 일치 챌린지를 연다.</p></div>
+      <div class="card ink" style="display:flex;flex-direction:column;justify-content:center"><b style="color:var(--volt);font-size:20px">핵심 가치</b><div style="font-size:36px;font-weight:800;line-height:1.3;margin-top:10px">조작하지 않아도<br>내 리듬에 맞는<br>음악이 이어진다</div></div>
+    </div>
+  </section>
+
+  <section class="slide big">
+    <div class="eyebrow">01 프로젝트 개요</div>
+    <h2>타깃</h2>
+    <div class="grid fill" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr auto">
+      <div class="card"><div class="head"><div class="badge bg-volt">A</div><div><h3>정기 러너</h3><div class="t-muted" style="font-size:20px">29세 직장인 · 주 3회 러닝 · 하프 마라톤 준비</div></div></div>
+        <ul class="b" style="margin-top:20px"><li>목표 케이던스를 안정적으로 유지하고 싶다</li><li>인터벌 훈련 중 휴대폰을 보고 싶지 않다</li><li>스마트워치로 러닝 지표를 확인한다</li></ul></div>
+      <div class="card"><div class="head"><div class="badge bg-sky">B</div><div><h3>음악 중심 러너</h3><div class="t-muted" style="font-size:20px">26세 대학원생 · 주 2회 러닝 · Spotify 또는 Apple Music 구독</div></div></div>
+        <ul class="b" style="margin-top:20px"><li>좋아하는 장르로 달릴 때 동기가 생긴다</li><li>곡의 박자가 발과 어긋나면 바로 넘긴다</li><li>러닝 기록을 스토리로 공유한다</li></ul></div>
+      <div style="grid-column:1/-1">
+        <h3 style="margin-bottom:12px">사용 맥락</h3>
+        <div class="grid" style="grid-template-columns:repeat(3,1fr);font-size:24px;font-weight:700;text-align:center">
+          <div class="card" style="padding:22px">러닝 전: 휴대폰에서 모드 선택</div>
+          <div class="card volt" style="padding:22px">러닝 중: 화면을 잠그고 워치로 확인</div>
+          <div class="card" style="padding:22px">러닝 후: 휴대폰에서 리포트 공유</div>
+        </div>
+      </div>
+    </div>
+    <p class="src">페르소나는 기획을 위해 설정한 가상 인물입니다.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">02 프로젝트 세부 분석</div>
+    <h2>인접 서비스</h2>
+    <table>
+      <tr><th style="width:230px">서비스</th><th style="width:360px">핵심 기능</th><th style="width:370px">음악과의 관계</th><th>페이스비츠와 다른 점</th></tr>
+      <tr style="height:80px"><td class="n">Nike Run Club</td><td>러닝 기록, 가이드 런 코칭</td><td>음악 앱 연동, 선곡은 사용자 몫</td><td>코치 음성이 러닝을 이끈다</td></tr>
+      <tr style="height:80px"><td class="n">Strava</td><td>활동 기록, 세그먼트, 클럽</td><td>음악은 핵심 기능이 아님</td><td>달린 뒤의 기록과 커뮤니티에 집중</td></tr>
+      <tr style="height:80px"><td class="n">Apple 운동 앱</td><td>Workout Buddy 음성 코칭, Pacer</td><td>취향과 운동 종류로 음악 제안</td><td>제안 기준이 케이던스가 아니다</td></tr>
+      <tr style="height:80px"><td class="n">Samsung Health</td><td>Running Coach 적응형 훈련 계획</td><td>음악은 핵심 기능이 아님</td><td>훈련 강도 코칭에 집중</td></tr>
+      <tr style="height:80px"><td class="n">Spotify · Apple Music</td><td>음악 스트리밍, 플레이리스트</td><td>음악 그 자체</td><td>달리는 사람의 리듬을 알지 못한다</td></tr>
+      <tr class="hl" style="height:80px"><td>페이스비츠</td><td>케이던스 연동 선곡</td><td>곡이 곧 페이스 신호</td><td>휴대폰·워치 센서로 다음 곡을 고른다</td></tr>
+    </table>
+    <div class="fill" style="display:flex;align-items:center;font-size:26px;font-weight:700">시사점: 코칭은 목소리로, 기록은 지도로, 음악은 취향으로 제공된다. 페이스비츠는 곡 자체를 페이스 신호로 쓴다.</div>
+    <p class="src" style="margin-top:0">비교 범위: 핵심 기능이 다른 인접 서비스. 출처: 각 서비스 공개 자료 (2026년 11월 확인) 및 팀 정리</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">02 프로젝트 세부 분석</div>
+    <h2>구매 요인</h2>
+    <table class="kbf">
+      <tr><th style="width:310px">서비스</th><th>리듬 연동</th><th>음악 취향</th><th>훈련 코칭</th><th>커뮤니티</th><th>기기 범위</th><th>설치·인지도</th></tr>
+      <tr><td class="n">Nike Run Club</td><td class="s1">1</td><td class="s3">3</td><td class="s5">5</td><td class="s3">3</td><td class="s4">4</td><td class="s5">5</td></tr>
+      <tr><td class="n">Strava</td><td class="s1">1</td><td class="s1">1</td><td class="s2">2</td><td class="s5">5</td><td class="s5">5</td><td class="s5">5</td></tr>
+      <tr><td class="n">Apple 운동 앱</td><td class="s1">1</td><td class="s4">4</td><td class="s3">3</td><td class="s1">1</td><td class="s1">1</td><td class="s5">5</td></tr>
+      <tr><td class="n">Samsung Health</td><td class="s1">1</td><td class="s1">1</td><td class="s4">4</td><td class="s2">2</td><td class="s1">1</td><td class="s4">4</td></tr>
+      <tr><td class="n">Spotify · Apple Music</td><td class="s1">1</td><td class="s5">5</td><td class="s1">1</td><td class="s2">2</td><td class="s5">5</td><td class="s5">5</td></tr>
+      <tr class="me"><td>페이스비츠</td><td class="s5">5</td><td class="s4">4</td><td class="s3">3</td><td class="s2">2</td><td class="s3">3</td><td class="s1">1</td></tr>
+    </table>
+    <div class="grid fill" style="grid-template-columns:repeat(3,1fr);margin-top:22px">
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center"><b style="font-size:25px">이기는 축</b><p class="d" style="margin-top:6px">리듬 연동과 음악 취향의 결합</p></div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center"><b style="font-size:25px">따라잡을 축</b><p class="d" style="margin-top:6px">인터벌 코칭, 챌린지로 커뮤니티</p></div>
+      <div class="card" style="display:flex;flex-direction:column;justify-content:center"><b style="font-size:25px">싸우지 않을 축</b><p class="d" style="margin-top:6px">설치 기반은 기록 앱과의 공존으로 우회</p></div>
+    </div>
+    <p class="src">5점 척도. 공개 기능을 기준으로 한 팀 평가이며 실측값이 아닙니다.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">02 프로젝트 세부 분석</div>
+    <h2>포지셔닝</h2>
+    <div class="grid fill" style="grid-template-columns:600px 1fr;gap:32px">
+      <div class="grid" style="grid-template-rows:repeat(3,1fr)">
+        <div class="card" style="display:flex;flex-direction:column;justify-content:center"><h3>가로축: 서비스의 중심</h3><p class="d" style="margin-top:6px">러닝 데이터 중심에서 음악 경험 중심으로 갈수록 오른쪽이다.</p></div>
+        <div class="card" style="display:flex;flex-direction:column;justify-content:center"><h3>세로축: 개입 시점</h3><p class="d" style="margin-top:6px">달린 뒤의 기록에서 달리는 순간의 반응으로 갈수록 위쪽이다.</p></div>
+        <div class="card volt" style="display:flex;flex-direction:column;justify-content:center"><h3>포지션</h3><p class="d" style="margin-top:6px">코칭 앱의 실시간성과 음악 앱의 취향을 결합한다.</p></div>
+      </div>
+      <svg viewBox="0 0 760 680" style="width:100%;height:100%;min-height:0" role="img" aria-label="포지셔닝 맵" font-family="inherit">
+        <circle cx="380" cy="340" r="270" fill="#F1F3F5" stroke="#C9CED6"/>
+        <path d="M70 340H690M380 34V646" stroke="#4B5260" stroke-width="2"/>
+        <g font-size="20" font-weight="700" fill="#14161A" text-anchor="middle">
+          <text x="380" y="22">달리는 순간의 반응</text><text x="380" y="674">달린 뒤의 기록</text>
+          <text x="38" y="334">러닝</text><text x="38" y="360">데이터</text>
+          <text x="725" y="334">음악</text><text x="725" y="360">경험</text>
+        </g>
+        <g fill="#C9CED6" stroke="#14161A"><circle cx="285" cy="175" r="60"/><circle cx="170" cy="290" r="58"/><circle cx="305" cy="320" r="56"/><circle cx="250" cy="500" r="54"/><circle cx="540" cy="470" r="66"/></g>
+        <circle cx="520" cy="180" r="80" fill="#D4FF3A" stroke="#14161A"/>
+        <g font-size="18" font-weight="700" fill="#14161A" text-anchor="middle">
+          <text x="285" y="169">Apple</text><text x="285" y="191">운동 앱</text>
+          <text x="170" y="284">Samsung</text><text x="170" y="306">Health</text>
+          <text x="305" y="314">Nike Run</text><text x="305" y="336">Club</text>
+          <text x="250" y="506">Strava</text>
+          <text x="540" y="464">Spotify ·</text><text x="540" y="486">Apple Music</text>
+        </g>
+        <text x="520" y="189" font-size="27" font-weight="800" fill="#14161A" text-anchor="middle">페이스비츠</text>
+      </svg>
+    </div>
+    <p class="src">인접 서비스의 위치는 공개 기능을 기준으로 한 팀의 정성 평가입니다.</p>
+  </section>
+
+  <section class="slide big swot">
+    <div class="eyebrow">02 프로젝트 세부 분석</div>
+    <h2>SWOT 분석</h2>
+    <div class="grid fill" style="grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:16px">
+      <div class="card"><div class="head"><div class="badge bg-volt sm">S</div><h3>강점</h3></div><ul class="b" style="margin-top:10px"><li>케이던스로 다음 곡을 고르는 리듬 연동 선곡</li><li>Spotify·Apple Music의 내 취향 곡 그대로 사용</li><li>iPhone·Galaxy와 양쪽 워치 지원</li><li>곡별 리듬 반응 기록이 쌓일수록 정확해지는 선곡</li></ul></div>
+      <div class="card"><div class="head"><div class="badge bg-grey sm">W</div><h3>약점</h3></div><ul class="b" style="margin-top:10px"><li>음악 유료 구독자로 대상 한정, 국내 1위 YouTube Music 미지원</li><li>카탈로그 300곡, BPM 수작업 검증으로 확장 비용 발생</li><li>Galaxy는 Spotify만 지원해 기기별 경험 차이</li><li>2인 팀, 설치 기반과 마케팅 자원 부족</li></ul></div>
+      <div class="card"><div class="head"><div class="badge bg-sky sm">O</div><h3>기회</h3></div><ul class="b" style="margin-top:10px"><li>국내 러닝 인구 약 1,000만 명 추정, 대회 430개 이상</li><li>러닝 크루 중심의 기록 공유 문화 확산</li><li>OS 기본 코칭은 자사 기기에 묶여 교차 지원 여지</li><li>Spotify 자체 러닝 모드 종료 후 남은 수요</li></ul></div>
+      <div class="card"><div class="head"><div class="badge bg-coral sm">T</div><h3>위협</h3></div><ul class="b" style="margin-top:10px"><li>음악 플랫폼의 API 정책 강화 추세 (2024·2026년 제한)</li><li>Apple·삼성 기본 앱의 음악·코칭 기능 강화</li><li>템포 맞춤 기능 자체는 모방이 쉬움</li><li>무료 러닝 앱 대비 유료 전환 동기가 약함</li></ul></div>
+    </div>
+    <p class="src">출처: Spotify for Developers 공지, Apple·삼성 발표 자료, 와이즈앱 인용 보도 (2026년 8월), 2025년 국내 언론 보도, 팀 분석</p>
+  </section>
+
+  <section class="slide big">
+    <div class="eyebrow">02 프로젝트 세부 분석</div>
+    <h2>SWOT 전략</h2>
+    <div class="grid fill" style="grid-template-columns:300px 1fr 1fr;grid-template-rows:96px 1fr 1fr;gap:16px">
+      <div></div>
+      <div class="card bg-sky" style="display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;padding:12px">O &nbsp;러닝 시장 확대, 크루 문화, 교차 기기 여지</div>
+      <div class="card bg-coral" style="display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;padding:12px">T &nbsp;플랫폼 정책, OS 기본 앱, 쉬운 모방</div>
+      <div class="card bg-volt" style="display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;text-align:center;line-height:1.4">S<br>리듬 연동 선곡<br>내 음악 그대로<br>쌓이는 반응 기록</div>
+      <div class="card"><h3><span class="t-muted">SO</span> &nbsp;크루로 확산</h3><p class="d" style="margin-top:10px">크루 BPM 일치 챌린지로 러닝 크루 단위 유입을 만든다.</p></div>
+      <div class="card"><h3><span class="t-muted">ST</span> &nbsp;데이터로 방어</h3><p class="d" style="margin-top:10px">곡별 리듬 반응 기록으로 BPM 매칭만으로는 따라올 수 없는 개인화를 만든다.</p></div>
+      <div class="card bg-grey" style="display:flex;align-items:center;justify-content:center;font-size:23px;font-weight:700;text-align:center;line-height:1.4">W<br>구독자 한정<br>300곡 규모<br>설치 기반 없음</div>
+      <div class="card"><h3><span class="t-muted">WO</span> &nbsp;음악과 곡 확장</h3><p class="d" style="margin-top:10px">음악 서비스를 단계적으로 늘리고, 크루 신청곡을 우선 검증해 카탈로그를 키운다.</p></div>
+      <div class="card"><h3><span class="t-muted">WT</span> &nbsp;기록 앱과 공존</h3><p class="d" style="margin-top:10px">러닝 기록을 Apple 건강·Health Connect로 내보내 기존 앱과 함께 쓰게 한다.</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">02 프로젝트 세부 분석</div>
+    <h2>경쟁력</h2>
+    <div class="grid" style="grid-template-columns:430px 1fr;gap:22px;margin-bottom:22px">
+      <div class="card" style="padding:22px 26px"><b style="font-size:26px">복제되기 쉬운 것</b><ul class="b" style="margin-top:8px;font-size:23px"><li>BPM 매칭 선곡</li><li>음악 앱 재생 연동</li><li>타이머형 인터벌</li></ul></div>
+      <div class="card ink" style="padding:22px 26px"><b style="font-size:26px;color:var(--volt)">쌓일수록 강해지는 것</b>
+        <div class="fly"><span>달리기</span><i>›</i><span>곡별 리듬 유지 기록</span><i>›</i><span>나에게 맞는 다음 곡</span><i>›</i><span>더 잦은 사용</span></div>
+        <p style="font-size:22px;margin-top:14px">같은 170 BPM이어도 내가 리듬을 잘 유지한 곡을 먼저 고른다.</p>
+      </div>
+    </div>
+    <div class="grid fill center-cards" style="grid-template-columns:repeat(3,1fr);gap:18px">
+      <div class="card"><div class="head"><div class="badge bg-volt sm">1</div><h3>리듬 반응 학습</h3></div><p class="d" style="margin-top:14px;font-size:24px">곡별 케이던스 안정도를 점수화해 선곡 순위에 반영한다.</p><p style="margin-top:18px;font-size:23px;font-weight:700;line-height:1.4">쓸수록 정확해져 옮기기 어렵다</p></div>
+      <div class="card"><div class="head"><div class="badge bg-coral sm">2</div><h3>크루 챌린지</h3></div><p class="d" style="margin-top:14px;font-size:24px">크루 단위 BPM 일치 챌린지로 함께 쓰는 이유를 만든다.</p><p style="margin-top:18px;font-size:23px;font-weight:700;line-height:1.4">한 명이 아니라 크루 단위로 유입된다</p></div>
+      <div class="card"><div class="head"><div class="badge bg-sky sm">3</div><h3>기기·기록 개방</h3></div><p class="d" style="margin-top:14px;font-size:24px">iPhone·Galaxy를 지원하고 기록은 건강 앱으로 내보낸다.</p><p style="margin-top:18px;font-size:23px;font-weight:700;line-height:1.4">OS 기본 앱이 못 넘는 기기 경계를 넘는다</p></div>
+    </div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">03 프로젝트 컨셉안</div>
+    <h2>톤앤매너와 타입</h2>
+    <div class="grid fill" style="grid-template-columns:470px 1fr 300px;gap:28px">
+      <div class="grid" style="grid-template-rows:auto repeat(3,1fr);gap:12px">
+        <div class="card ink" style="padding:20px 24px"><b style="color:var(--volt);font-size:20px">컨셉</b><div style="font-size:33px;font-weight:800;margin-top:4px;line-height:1.3">발걸음이 플레이 버튼이 됩니다</div></div>
+        <div class="card" style="padding:12px 22px;display:flex;flex-direction:column;justify-content:center"><b style="font-size:27px">역동적</b><p class="d">네온 볼트와 굵은 숫자로 에너지를 표현한다.</p></div>
+        <div class="card" style="padding:12px 22px;display:flex;flex-direction:column;justify-content:center"><b style="font-size:27px">명료함</b><p class="d">한 화면에 가장 중요한 지표 하나를 크게 보여 준다.</p></div>
+        <div class="card" style="padding:12px 22px;display:flex;flex-direction:column;justify-content:center"><b style="font-size:27px">몰입감</b><p class="d">어두운 배경과 최소 조작으로 집중하게 한다.</p></div>
+      </div>
+      <div>
+        <table class="type">
+          <tr><th>구분</th><th>폰트</th><th>사이즈</th><th>자간</th></tr>
+          <tr><td>핵심 수치</td><td>SF Pro Heavy</td><td>112–136pt</td><td>-3%</td></tr>
+          <tr><td>화면 제목</td><td>SD Gothic Neo ExtraBold</td><td>28–30pt</td><td>-2%</td></tr>
+          <tr><td>버튼</td><td>SD Gothic Neo ExtraBold</td><td>20pt</td><td>0</td></tr>
+          <tr><td>본문·캡션</td><td>SD Gothic Neo Regular</td><td>13–16pt</td><td>0</td></tr>
+          <tr><td>워치 수치</td><td>SF Pro Heavy</td><td>54–78pt</td><td>-3%</td></tr>
+          <tr><td>워치 라벨</td><td>SD Gothic Neo Bold</td><td>12–21pt</td><td>0</td></tr>
+        </table>
+        <p style="font-size:21px;font-weight:700;margin-top:18px;line-height:1.4">숫자는 고정폭으로 표시해 값이 바뀌어도 흔들리지 않는다. Galaxy는 같은 크기 체계를 기본 서체로 적용한다.</p>
+      </div>
+      <div class="grid" style="grid-template-rows:repeat(5,1fr);gap:10px">
+        <div class="card sw" style="background:#0A0B0D;color:#fff"><b>Black</b><span>#0A0B0D 배경</span></div>
+        <div class="card sw" style="background:#D4FF3A"><b>Volt</b><span>#D4FF3A 주요 동작</span></div>
+        <div class="card sw" style="background:#FF5A3C"><b>Coral</b><span>#FF5A3C 고강도</span></div>
+        <div class="card sw" style="background:#5CC8FF"><b>Sky</b><span>#5CC8FF 워밍업</span></div>
+        <div class="card sw" style="background:#fff;box-shadow:inset 0 0 0 1px #C9CED6"><b>White</b><span>#FFFFFF 본문</span></div>
+      </div>
+    </div>
+  </section>
+
+  
+
+  <section class="slide">
+    <div class="eyebrow">03 프로젝트 컨셉안</div>
+    <h2>주요 내용</h2>
+    <div class="grid" style="grid-template-columns:repeat(4,1fr);gap:28px;margin-bottom:32px">
+      <div class="card"><div class="head"><div class="badge bg-sky sm">1</div><h3>측정</h3></div><p class="d" style="margin-top:18px;font-size:25px">휴대폰·워치 센서로 케이던스 측정, 15초 평활화</p></div>
+      <div class="card"><div class="head"><div class="badge bg-volt sm">2</div><h3>선곡</h3></div><p class="d" style="margin-top:18px;font-size:25px">±3 BPM, 하프타임, 장르, 리듬 반응으로 점수화</p></div>
+      <div class="card"><div class="head"><div class="badge bg-volt sm">3</div><h3>재생</h3></div><p class="d" style="margin-top:18px;font-size:25px">Spotify·Apple Music 재생, 구간 전환 시 즉시 교체</p></div>
+      <div class="card"><div class="head"><div class="badge bg-coral sm">4</div><h3>기록</h3></div><p class="d" style="margin-top:18px;font-size:25px">경로, 구간 페이스, SPM, 재생 곡 저장</p></div>
+    </div>
+    <table>
+      <tr><th>모드</th><th>목표 SPM</th><th>화면 표현</th><th>사용자 경험</th></tr>
+      <tr style="height:104px"><td class="n">오토 싱크</td><td>평활화한 현재 SPM</td><td>현재 SPM 크게, 싱크 차이 표시</td><td>내 리듬을 그대로 따라오는 음악</td></tr>
+      <tr style="height:104px"><td class="n">케이던스 유도</td><td>곡마다 +2~3 SPM, 범위 150~190</td><td>현재에서 목표까지 계단 그래프</td><td>음악을 따라가면 목표에 도달</td></tr>
+      <tr style="height:104px"><td class="n">인터벌</td><td>워밍업 165, 고강도 178, 조깅 160</td><td>구간 색상 전환, 남은 시간</td><td>구간마다 강도와 곡이 전환</td></tr>
+    </table>
+    <p class="src" style="margin-top:16px">설계 근거: 러너 케이던스의 2.5% 이내 템포 변화가 케이던스 유도에 효과적이었다 (Van Dyck et al., 2015, 러너 16명). 곡당 +2~3 SPM은 이 범위 안이다.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">03 프로젝트 컨셉안</div>
+    <h2 style="margin-bottom:14px">전체 플로우: 인터벌 러닝</h2>
+    <table>
+      <tbody class="flow">
+      <tr style="height:48px"><th style="width:150px">Stage 구분</th><th>내용</th><th style="width:160px">UI/UX 설계</th><th style="width:270px">확인 및 필요사항</th><th style="width:240px">사운드·햅틱</th><th style="width:160px">Duration</th></tr>
+      <tr><td class="bg-grey">대기</td><td>앱 실행 후 모드 선택, 기기 연결 확인</td><td>P-04 / W-01</td><td>음악 서비스, 워치 연결 표시</td><td>-</td><td>약 30초</td></tr>
+      <tr><td class="bg-volt">Start</td><td>3초 카운트다운 후 첫 곡 재생</td><td>P-07 / W-02</td><td>현재 케이던스 기준 첫 곡</td><td>음성 안내, 손목 진동</td><td>5초</td></tr>
+      <tr><td class="bg-sky">워밍업</td><td>천천히 리듬을 만들며 달린다</td><td>P-08 / W-05</td><td>목표 165 SPM</td><td>음악</td><td>5분</td></tr>
+      <tr><td class="bg-coral">고강도</td><td>높은 Energy 곡과 코랄 화면으로 전환</td><td>P-08 / W-05</td><td>목표 178 SPM</td><td>시작 음성, 진동</td><td>3분</td></tr>
+      <tr><td class="bg-volt">구간 전환</td><td>다음 구간과 곡 교체를 전체 화면으로 알림</td><td>W-06</td><td>3초 전 안내</td><td>카운트다운, 강한 햅틱</td><td>3초</td></tr>
+      <tr><td class="bg-sky">조깅</td><td>중간 Energy 곡으로 회복</td><td>P-08 / W-05</td><td>목표 160 SPM</td><td>음악</td><td>2분 (×4 반복)</td></tr>
+      <tr><td class="bg-grey">일시정지</td><td>화면 탭 또는 워치 버튼으로 정지·재개</td><td>P-07 / W-07</td><td>기록과 곡 위치 유지</td><td>짧은 진동</td><td>필요 시</td></tr>
+      <tr><td class="bg-sky">쿨다운</td><td>낮은 Energy 곡으로 마무리</td><td>P-08 / W-05</td><td>목표 155 SPM</td><td>음악</td><td>5분</td></tr>
+      <tr><td class="bg-volt">Finish</td><td>거리, 시간, 일치율 요약</td><td>W-08 / P-09</td><td>시작·종료 경로 마스킹</td><td>완료 진동</td><td>10초</td></tr>
+      <tr><td class="bg-grey">리포트</td><td>구간별 곡 확인, 공유 카드 저장</td><td>P-10 / P-11</td><td>음악 서비스 표기</td><td>-</td><td>약 1분</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="slide big">
+    <div class="eyebrow">04 프로젝트 상세기획</div>
+    <h2>화면 구조</h2>
+    <h3 style="margin-bottom:10px">iPhone · Galaxy</h3>
+    <div class="ia">
+      <div class="bg-grey">P-01~03<br>연결·장르·권한</div><div class="bg-volt">P-04<br>홈·모드 선택</div><div class="bg-grey">P-05 유도 설정<br>P-06 인터벌</div><div class="bg-volt">P-07 오토 싱크·유도<br>P-08 인터벌</div><div class="bg-sky">P-09 리포트</div><div class="bg-sky">P-10 곡 상세<br>P-11 공유 카드</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:28px;margin:10px 0;font-size:18px">
+      <span class="t-muted" style="grid-column:1/4">P-12 설정은 하단 탭에서 언제든 진입합니다.</span>
+      <span style="font-weight:700;color:var(--mark);text-align:center">↕ 실시간 동기화</span>
+    </div>
+    <h3 style="margin-bottom:10px">Apple Watch · Galaxy Watch</h3>
+    <div class="ia">
+      <div class="e"></div><div class="bg-grey">W-01 대기</div><div class="bg-grey">W-02<br>카운트다운</div><div class="bg-volt">W-03 러닝<br>W-05 인터벌</div><div class="bg-grey">W-04 음악<br>W-06 전환 알림</div><div class="bg-grey">W-07 일시정지<br>W-08 완료</div>
+    </div>
+    <div class="grid fill" style="grid-template-columns:1fr 1fr;margin-top:28px">
+      <div class="card"><h3>휴대폰의 역할</h3><p class="d" style="margin-top:8px">온보딩, 모드·목표 설정, 상세 지표, 리포트와 공유를 담당한다.</p></div>
+      <div class="card"><h3>워치의 역할</h3><p class="d" style="margin-top:8px">러닝 시작, SPM 확인, 음악 제어, 구간 햅틱, 완료 요약을 담당한다.</p></div>
+    </div>
+    <p class="src">Galaxy·Galaxy Watch는 아래 스토리보드와 같은 화면 구조를 적용합니다. 음악은 iPhone에서 Spotify·Apple Music, Galaxy에서 Spotify를 지원합니다.</p>
+  </section>
+
+  <section class="slide" data-board="0"></section>
+  <section class="slide" data-board="1"></section>
+  <section class="slide" data-board="2"></section>
+  <section class="slide" data-board="3"></section>
+  <section class="slide" data-board="4"></section>
+
+  <section class="slide dark cover" style="padding:88px 96px 72px">
+    <svg class="beats"><use href="#beats"/></svg>
+    <h1 style="font-size:72px;margin-top:28px">내 리듬에 맞춰 이어지는 러닝</h1>
+    <p class="lead" style="font-size:30px;margin-top:14px">페이스비츠가 만드는 기대 효과</p>
+    <div class="fill"></div>
+    <div class="grid" style="grid-template-columns:repeat(3,1fr);gap:24px">
+      <div class="card" style="background:#2B2F36;color:#fff"><b style="color:var(--volt);font-size:30px">사용자</b><p style="font-size:25px;line-height:1.4;margin-top:10px">선곡 조작 없이 일정한 케이던스와 몰입을 유지한다.</p></div>
+      <div class="card" style="background:#2B2F36;color:#fff"><b style="color:var(--volt);font-size:30px">콘텐츠</b><p style="font-size:25px;line-height:1.4;margin-top:10px">러닝 데이터와 음악을 공유할 수 있는 나만의 기록으로 만든다.</p></div>
+      <div class="card" style="background:#2B2F36;color:#fff"><b style="color:var(--volt);font-size:30px">서비스</b><p style="font-size:25px;line-height:1.4;margin-top:10px">러닝 커뮤니티와 음악 플랫폼을 잇는 콘텐츠 접점을 확보한다.</p></div>
+    </div>
+  </section>
+</main>
+
+<nav id="nav" aria-label="슬라이드 이동">
+  <button id="prev" aria-label="이전 슬라이드">‹</button>
+  <span id="count"></span>
+  <button id="next" aria-label="다음 슬라이드">›</button>
+  <button id="full" aria-label="전체 화면">⛶</button>
+</nav>
+
+<script>
+  var SIZE = { P: [425, 884], W: [240, 282] };
+
+  // 페이스비츠_UI.html에서 캡처한 화면 이미지를 넣는다.
+  function device(id, scale, marks) {
+    var s = SIZE[id.charAt(0)];
+    var box = document.createElement('div');
+    box.className = 'device';
+    box.style.width = s[0] * scale + 'px';
+    box.style.height = s[1] * scale + 'px';
+    var img = document.createElement('img');
+    img.src = 'assets/screens/' + id + (marks ? '' : '_clean') + '.png';
+    img.alt = id + ' 화면';
+    box.appendChild(img);
+    return box;
+  }
+
+  var boards = [
+    { title: 'iPhone 스토리보드 1: 첫 실행과 홈', id: 'P-01~P-04', name: '온보딩, 홈', path: '앱 실행 &gt; 음악 서비스 연결 &gt; 장르 &gt; 권한 &gt; 홈', screens: [
+      ['P-01', '음악 서비스 연결', ['서비스 이름', '핵심 가치 문구', 'Spotify·Apple Music 선택', '이용 조건 안내']],
+      ['P-02', '장르 선택', ['화면 안내 문구', '장르 복수 선택 칩', '선택 개수 표시', '다음 단계로 이동']],
+      ['P-03', '러닝 준비', ['동작 권한: 케이던스 측정', '위치 권한: 경로 기록', 'Apple Watch 연결 상태', '주변 소리 주의 안내']],
+      ['P-04', '홈', ['워치 연결 표시', '지난 러닝 요약', '모드 카드 3종, 선택 시 테두리', '선택한 모드로 러닝 시작']] ] },
+    { title: 'iPhone 스토리보드 2: 모드 설정과 러닝', id: 'P-05~P-08', name: '모드 설정, 러닝 중', path: '홈 &gt; 모드 선택 &gt; 설정 &gt; 러닝 중', screens: [
+      ['P-05', '케이던스 유도', ['목표 SPM 크게 표시', '1 SPM 단위 조절', '곡별 상승 미리보기', '유도 모드 시작']],
+      ['P-06', '인터벌 프리셋', ['프리셋 3종', '구간 타임라인', '고강도 목표 SPM 조절(− +)', '인터벌 시작']],
+      ['P-07', '오토 싱크 러닝', ['현재 모드', '실시간 SPM 최대 크기', '곡 BPM과 싱크 차이', '거리, 페이스, 심박', '재생 곡, Spotify 표기']],
+      ['P-08', '인터벌 러닝', ['구간 이름과 회차', '구간 남은 시간', '현재·목표 SPM', '타임라인, 다음 구간', '재생 곡, BPM, Energy']] ] },
+    { title: 'iPhone 스토리보드 3: 리포트와 공유', id: 'P-09~P-12', name: '리포트, 공유, 설정', path: '러닝 종료 또는 기록 탭 &gt; 리포트 &gt; 공유 / 설정 탭', screens: [
+      ['P-09', '러닝 리포트', ['시작·종료 마스킹 경로', '거리, 시간, 페이스', 'BPM 일치율, 평균 SPM', '구간별 곡 보기']],
+      ['P-10', '케이던스와 음악', ['SPM·곡 BPM 비교 차트', '곡별 리듬 유지 점수', '음악 서비스로 이동', '공유 카드 만들기']],
+      ['P-11', '공유 카드', ['9:16 카드 미리보기', '마스킹된 경로', '대표 곡, Spotify 표기', '저장, 스토리 공유']],
+      ['P-12', '설정', ['선호 장르 수정', '음악 서비스 전환', '음성 안내와 햅틱', '경로 마스킹']] ] },
+    { title: 'Apple Watch 스토리보드 1: 시작과 러닝', id: 'W-01~W-04', name: '시작, 러닝, 음악', path: '워치 앱 &gt; 시작 &gt; 러닝 &gt; 좌우 스와이프로 음악', screens: [
+      ['W-01', '대기', ['현재 모드, 스와이프 변경', 'iPhone 연결 상태', '러닝 시작']],
+      ['W-02', '카운트다운', ['3초 카운트다운', '손목 진동 안내']],
+      ['W-03', '러닝', ['현재 모드', '실시간 SPM', '곡 BPM과 싱크 차이', '거리와 페이스']],
+      ['W-04', '음악 제어', ['재생 곡과 아티스트', 'Spotify 표기', '일시정지, 다음 곡', 'Digital Crown 볼륨']] ] },
+    { title: 'Apple Watch 스토리보드 2: 인터벌과 종료', id: 'W-05~W-08', name: '인터벌, 전환 알림, 종료', path: '러닝 &gt; 구간 전환 &gt; 일시정지 &gt; 러닝 완료', screens: [
+      ['W-05', '인터벌', ['구간과 회차', '구간 남은 시간', '현재·목표 SPM', '구간 진행 막대']],
+      ['W-06', '구간 전환 알림', ['전체 화면 알림', '다음 구간 이름', '다음 목표 SPM', '곡 전환까지 남은 시간']],
+      ['W-07', '일시정지', ['상태와 경과 시간', '러닝 재개', '러닝 종료']],
+      ['W-08', '러닝 완료', ['완료 상태', '거리, 시간, 페이스', '평균 SPM, BPM 일치율', 'iPhone 리포트 안내']] ] }
+  ];
+
+  document.querySelectorAll('[data-board]').forEach(function (slide) {
+    var b = boards[+slide.dataset.board];
+    slide.innerHTML = '<div class="eyebrow">04 프로젝트 상세기획</div>' +
+      '<h2 style="margin-bottom:10px">' + b.title + '</h2>' +
+      '<div class="meta"><b>화면ID</b><span>' + b.id + '</span><b>화면명</b><span>' + b.name + '</span><b>화면경로</b><span>' + b.path + '</span></div>' +
+      '<div class="board"></div>';
+    var board = slide.querySelector('.board');
+    b.screens.forEach(function (sc) {
+      var col = document.createElement('div');
+      col.innerHTML = '<div class="sb-label">' + sc[0] + '&nbsp; ' + sc[1] + '</div><div class="sb-panel"></div>';
+      col.querySelector('.sb-panel').appendChild(device(sc[0], sc[0].charAt(0) === 'P' ? 0.44 : 1.25, true));
+      var ul = document.createElement('ol');
+      ul.className = 'desc';
+      sc[2].forEach(function (d, n) {
+        var li = document.createElement('li');
+        li.innerHTML = '<b>' + (n + 1) + '</b><span>' + d + '</span>';
+        ul.appendChild(li);
+      });
+      col.appendChild(ul);
+      board.appendChild(col);
+    });
+  });
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  slides.forEach(function (s, i) {
+    if (i === 0) return;
+    var pn = document.createElement('div');
+    pn.className = 'pn'; pn.textContent = i + 1;
+    s.appendChild(pn);
+  });
+  var current = 0;
+  function go(i) {
+    current = Math.max(0, Math.min(slides.length - 1, i));
+    slides.forEach(function (s, n) { s.classList.toggle('on', n === current); });
+    document.getElementById('count').textContent = (current + 1) + ' / ' + slides.length;
+    if (location.hash !== '#' + (current + 1)) history.replaceState(null, '', '#' + (current + 1));
+  }
+  function fit() {
+    var k = Math.min(innerWidth / 1600, innerHeight / 900);
+    var st = document.getElementById('stage');
+    st.style.transform = 'translate(' + (innerWidth - 1600 * k) / 2 + 'px,' + (innerHeight - 900 * k) / 2 + 'px) scale(' + k + ')';
+  }
+  function toggleFull() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen();
+  }
+  addEventListener('resize', fit);
+  addEventListener('hashchange', function () { go(parseInt(location.hash.slice(1), 10) - 1 || 0); });
+  addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'ArrowDown' || k === 'PageDown' || k === ' ') { e.preventDefault(); go(current + 1); }
+    else if (k === 'ArrowLeft' || k === 'ArrowUp' || k === 'PageUp') { e.preventDefault(); go(current - 1); }
+    else if (k === 'Home') go(0);
+    else if (k === 'End') go(slides.length - 1);
+    else if (k === 'f' || k === 'F') toggleFull();
+  });
+  document.getElementById('prev').onclick = function () { go(current - 1); this.blur(); };
+  document.getElementById('next').onclick = function () { go(current + 1); this.blur(); };
+  document.getElementById('full').onclick = function () { toggleFull(); this.blur(); };
+  var idle;
+  function wake() {
+    document.body.classList.add('active');
+    clearTimeout(idle);
+    idle = setTimeout(function () { document.body.classList.remove('active'); }, 2000);
+  }
+  addEventListener('mousemove', wake);
+  addEventListener('touchstart', wake, { passive: true });
+  fit();
+  go(parseInt(location.hash.slice(1), 10) - 1 || 0);
+</script>
+</body>
+</html>

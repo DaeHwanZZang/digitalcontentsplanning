@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페이스비츠 UI</title>
+<style>
+  :root {
+    --bg: #0A0B0D; --surface: #17191D; --surface2: #24272D; --line: #33373E;
+    --text: #FFFFFF; --muted: #A4ABB5;
+    --volt: #D4FF3A; --coral: #FF5A3C; --sky: #5CC8FF; --spotify: #1DB954;
+    --ink: #0A0B0D;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #2A2D33; }
+  body {
+    font-family: -apple-system, "SF Pro Text", "Apple SD Gothic Neo", "Noto Sans KR", sans-serif;
+    color: var(--text); word-break: keep-all; -webkit-font-smoothing: antialiased;
+  }
+  button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+
+  /* 프로토타입 뷰어 */
+  .viewer { max-width: 1260px; margin: 0 auto; padding: 24px 16px 40px; }
+  .viewer h1 { font-size: 20px; margin-bottom: 4px; }
+  .viewer > p { color: #C8CDD4; font-size: 14px; margin-bottom: 18px; }
+  .stage { display: flex; flex-wrap: wrap; gap: 32px; justify-content: center; align-items: center; }
+  .picker { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 20px; }
+  .picker button { font-size: 13px; padding: 6px 10px; border-radius: 8px; background: #3A3E46; }
+  .picker button.on { background: var(--volt); color: var(--ink); font-weight: 700; }
+  .capture .viewer > h1, .capture .viewer > p, .capture .picker, .capture .sim { display: none; }
+
+  /* 기기 프레임 */
+  .iphone { position: relative; width: 417px; height: 876px; padding: 12px; flex: none; }
+  .watch { position: relative; width: 226px; height: 270px; padding: 14px; flex: none; }
+  .watch::after { content: ""; position: absolute; right: -6px; top: 74px; width: 6px; height: 40px; border-radius: 0 3px 3px 0; background: #4A4E56; }
+  .device-shell { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+  .screen { position: relative; z-index: 1; overflow: hidden; background: var(--bg); display: none; }
+  .screen.on { display: flex; flex-direction: column; }
+  .iphone .screen { width: 393px; height: 852px; padding: 58px 22px 34px; }
+  .watch .screen { width: 198px; height: 242px; padding: 20px 14px 12px; }
+
+  .status { position: absolute; z-index: 5; top: 30px; left: 48px; right: 48px; display: flex; justify-content: space-between; font-size: 16px; font-weight: 600; }
+  .island { position: absolute; z-index: 5; top: 24px; left: 50%; width: 118px; height: 34px; margin-left: -59px; border-radius: 20px; background: #000; }
+  .home { position: absolute; z-index: 5; bottom: 21px; left: 50%; width: 136px; height: 5px; margin-left: -68px; border-radius: 3px; background: #fff; }
+  .wtime { position: absolute; top: 9px; right: 24px; font-size: 13px; font-weight: 600; }
+  .wtitle { position: absolute; top: 9px; left: 24px; font-size: 13px; font-weight: 700; color: var(--volt); }
+
+  /* 공통 요소 */
+  h2.t { font-size: 30px; font-weight: 800; letter-spacing: -.02em; line-height: 1.25; }
+  .sub { color: var(--muted); font-size: 16px; line-height: 1.45; }
+  .eyebrow { color: var(--volt); font-size: 14px; font-weight: 700; letter-spacing: .04em; }
+  .grow { flex: 1; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .cta { display: block; width: 100%; height: 62px; border-radius: 31px; background: var(--volt); color: var(--ink); font-size: 20px; font-weight: 800; }
+  .cta.spot { background: var(--spotify); color: #fff; }
+  .cta.ghost { background: var(--surface2); color: #fff; }
+  .card { background: var(--surface); border-radius: 22px; padding: 16px 18px; }
+  .card.sel { box-shadow: inset 0 0 0 2.5px var(--volt); }
+  .back { font-size: 15px; color: var(--muted); margin-bottom: 14px; text-align: left; }
+  .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 26px; }
+  .chip { height: 70px; border-radius: 20px; background: var(--surface); font-size: 19px; font-weight: 700; }
+  .chip.sel { background: var(--volt); color: var(--ink); }
+  .tag { font-size: 13px; font-weight: 700; padding: 4px 9px; border-radius: 10px; background: var(--surface2); white-space: nowrap; }
+  .tag.volt { background: var(--volt); color: var(--ink); }
+  .tag.coral { background: var(--coral); color: var(--ink); }
+  .tag.acc { background: var(--acc, var(--volt)); color: var(--ink); }
+  .tabbar { display: flex; justify-content: space-around; margin-top: 14px; font-size: 13px; color: var(--muted); }
+  .tabbar .on { color: var(--volt); font-weight: 700; }
+  .num { font-variant-numeric: tabular-nums; font-weight: 800; letter-spacing: -.03em; }
+  .lbl { color: var(--muted); font-size: 14px; }
+  .perm { display: flex; justify-content: space-between; align-items: center; padding: 18px 0; border-bottom: 1px solid var(--line); font-size: 17px; font-weight: 600; }
+  .perm small { display: block; color: var(--muted); font-size: 13px; font-weight: 400; margin-top: 3px; }
+  .ok { color: var(--volt); font-size: 14px; font-weight: 700; white-space: nowrap; }
+  .art { width: 54px; height: 54px; border-radius: 8px; flex: none; background: conic-gradient(from 210deg, #FF5A3C, #7A3CFF, #5CC8FF, #FF5A3C); }
+  .art.b { background: conic-gradient(from 40deg, #D4FF3A, #18A0A0, #143C8C, #D4FF3A); }
+  .art.c { background: conic-gradient(from 120deg, #FFB03A, #FF3C8E, #3C1E78, #FFB03A); }
+  .np { display: flex; gap: 12px; align-items: center; }
+  .np b { display: block; font-size: 17px; }
+  .np span { color: var(--muted); font-size: 14px; }
+  .spot-link { display: flex; align-items: center; gap: 6px; color: var(--text); font-size: 13px; font-weight: 700; }
+  .spot-link i { width: 14px; height: 14px; border-radius: 50%; background: var(--spotify); display: block; }
+  .ctrl { display: flex; justify-content: center; align-items: center; gap: 30px; margin-top: 12px; }
+  .ctrl button { width: 64px; height: 64px; border-radius: 50%; background: var(--surface2); font-size: 22px; }
+  .ctrl button.main { width: 78px; height: 78px; background: var(--volt); color: var(--ink); font-size: 28px; font-weight: 800; }
+  .metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+  .metrics b { display: block; font-size: 26px; }
+  .seg { display: flex; gap: 3px; height: 14px; }
+  .seg i { display: block; border-radius: 3px; background: var(--surface2); }
+  .seg .w { background: var(--sky); } .seg .h { background: var(--coral); } .seg .j { background: var(--volt); }
+  .track { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 15px; }
+  .track .art { width: 38px; height: 38px; }
+  .track b { display: block; font-size: 15px; }
+  .track span { color: var(--muted); font-size: 12.5px; }
+  .step { display: flex; align-items: center; gap: 8px; }
+  .step button { width: 36px; height: 36px; border-radius: 50%; background: var(--surface2); font-size: 22px; font-weight: 700; line-height: 1; }
+  .step button:active { background: var(--line); }
+
+  /* 인터벌 러닝 화면: 고강도는 코랄, 그 외는 기본 톤 */
+  #P-08, #W-05 { --acc: var(--coral); background: #1B0E0A; }
+  #P-08 .card { background: #2C1712; }
+  #P-08.calm, #W-05.calm { --acc: var(--volt); background: var(--bg); }
+  #P-08.calm .card { background: var(--surface); }
+  #P-08 .accbtn { background: var(--acc); }
+  .flash { animation: pop .5s ease-out; }
+  @keyframes pop { 0% { transform: scale(.95); opacity: .45; } 100% { transform: none; opacity: 1; } }
+
+  /* 워치 공통 */
+  .watch .cta { height: 44px; border-radius: 22px; font-size: 17px; }
+  .watch .sub, .watch .lbl { font-size: 12px; }
+
+  /* 시연 패널 */
+  .sim { position: relative; width: 380px; max-width: 100%; flex: none; background: var(--surface); border-radius: 28px; padding: 20px; box-shadow: 0 0 0 2px #4A4E56; display: flex; flex-direction: column; gap: 14px; }
+  .sim-head { display: flex; justify-content: space-between; align-items: center; font-size: 16px; font-weight: 800; }
+  .sim-head small { color: var(--muted); font-size: 12px; font-weight: 500; }
+  .mode-tog { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; padding: 4px; background: var(--bg); border-radius: 14px; }
+  .mode-tog button { height: 38px; border-radius: 11px; font-size: 14px; font-weight: 700; color: var(--muted); }
+  .mode-tog button.on { background: var(--volt); color: var(--ink); }
+  .runbox { position: relative; height: 320px; border-radius: 20px; overflow: hidden; background: #1A1D22; }
+  .runbox svg { display: block; width: 100%; height: 100%; }
+  .chip-st, .chip-mu { position: absolute; top: 12px; font-size: 12px; font-weight: 700; padding: 5px 10px; border-radius: 10px; background: rgba(10,11,13,.72); max-width: 54%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .chip-st { left: 12px; }
+  .chip-mu { right: 12px; color: var(--volt); }
+  .toast { position: absolute; left: 14px; right: 14px; top: 50px; padding: 9px 12px; border-radius: 12px; background: var(--volt); color: var(--ink); font-size: 13px; font-weight: 800; text-align: center; opacity: 0; transform: translateY(-8px); transition: opacity .2s, transform .2s; pointer-events: none; }
+  .toast.on { opacity: 1; transform: none; }
+  .pulses { position: absolute; left: 12px; right: 12px; bottom: 6px; display: flex; justify-content: space-between; font-size: 12px; font-weight: 700; }
+  .pulses span { display: flex; align-items: center; gap: 7px; padding: 4px 10px; border-radius: 12px; background: rgba(10,11,13,.72); }
+  .pulses i { display: block; width: 10px; height: 10px; border-radius: 50%; }
+  #mDot { background: var(--volt); } #sDot { background: var(--sky); }
+  .ctl { display: grid; gap: 6px; }
+  .mini { font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 10px; background: var(--surface2); }
+  .mini:active { background: var(--line); }
+  .play { height: 36px; min-width: 96px; padding: 0 16px; border-radius: 18px; background: var(--volt); color: var(--ink); font-size: 14px; font-weight: 800; }
+  .sim input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 28px; background: transparent; position: relative; z-index: 2; margin: 0; cursor: pointer; }
+  .sim input[type=range]:disabled { cursor: not-allowed; }
+  .sim input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 3px; background: linear-gradient(to right, var(--volt) var(--pct, 0%), var(--surface2) var(--pct, 0%)); }
+  .sim input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #fff; margin-top: -8px; box-shadow: 0 0 0 3px var(--volt); }
+  .sim input[type=range]::-moz-range-track { height: 6px; border-radius: 3px; background: var(--surface2); }
+  .sim input[type=range]::-moz-range-progress { height: 6px; border-radius: 3px; background: var(--volt); }
+  .sim input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px var(--volt); }
+  .sim input[type=range]:disabled::-webkit-slider-thumb { background: #8A9099; box-shadow: 0 0 0 3px var(--line); }
+  .sim input[type=range]:disabled::-webkit-slider-runnable-track { background: linear-gradient(to right, #5A6070 var(--pct, 0%), var(--surface2) var(--pct, 0%)); }
+  .tl { position: relative; height: 28px; }
+  .tl::before { content: ""; position: absolute; left: 0; right: 0; top: 50%; height: 4px; margin-top: -2px; border-radius: 2px; background: var(--line); }
+  .tl input[type=range] { position: absolute; left: 0; top: 0; }
+  .tl input[type=range]::-webkit-slider-runnable-track { background: transparent; }
+  .tl input[type=range]::-moz-range-track, .tl input[type=range]::-moz-range-progress { background: transparent; }
+  .strip { position: absolute; z-index: 1; top: 50%; height: 14px; margin-top: -7px; left: calc(11px + (100% - 22px) * .04); right: calc(11px + (100% - 22px) * .04); display: flex; gap: 2px; border-radius: 7px; overflow: hidden; }
+  .strip i { display: block; background: var(--surface2); }
+  .strip i.w { background: var(--sky); } .strip i.h { background: var(--coral); } .strip i.j { background: var(--volt); }
+
+  /* 번호 표시 */
+  .mark { position: absolute; z-index: 20; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #2F6BFF; color: #fff; font-weight: 700; box-shadow: 0 0 0 2px #fff; font-family: -apple-system, sans-serif; }
+  @media (max-width: 480px) {
+    html:not(.embed) .iphone { transform: scale(.82); transform-origin: top center; margin-bottom: -158px; }
+  }
+
+  /* 발표자료 삽입용: ?screen=P-01&marks=1 */
+  .embed, .embed body { background: transparent; }
+  .embed .viewer { max-width: none; margin: 0; padding: 0; }
+  .embed .viewer > h1, .embed .viewer > p, .embed .picker, .embed .sim { display: none; }
+  .embed .stage { min-height: 100vh; gap: 0; }
+</style>
+</head>
+<body>
+<div class="viewer">
+  <h1>페이스비츠 UI 프로토타입</h1>
+  <p>iPhone·Apple Watch 화면 (샘플 데이터). 오른쪽 패널의 페이스 막대와 타임라인 막대를 움직이면 사람, 곡, 앱 화면이 함께 바뀝니다. 버튼을 누르거나 아래 화면 번호를 선택해도 이동합니다.</p>
+  <div class="stage">
+    <div class="iphone" id="iphone">
+
+      <section class="screen" id="P-01">
+        <div class="grow" style="display:flex;flex-direction:column;justify-content:center">
+          <div class="eyebrow" data-n="1">PACEBEATS</div>
+          <h2 class="t" style="font-size:42px;margin:12px 0 14px">발걸음이<br>플레이 버튼이<br>됩니다</h2>
+          <p class="sub" data-n="2">달리는 리듬에 맞춰 다음 곡을<br>자동으로 골라 재생합니다.</p>
+          <svg viewBox="0 0 340 90" style="margin-top:44px;width:100%" aria-hidden="true"><g fill="#D4FF3A"><rect x="0" y="40" width="10" height="16" rx="5"/><rect x="24" y="28" width="10" height="40" rx="5"/><rect x="48" y="14" width="10" height="68" rx="5"/><rect x="72" y="34" width="10" height="28" rx="5"/><rect x="96" y="20" width="10" height="56" rx="5"/><rect x="120" y="4" width="10" height="86" rx="5"/><rect x="144" y="30" width="10" height="36" rx="5"/><rect x="168" y="16" width="10" height="64" rx="5"/><rect x="192" y="36" width="10" height="24" rx="5"/><rect x="216" y="10" width="10" height="76" rx="5"/><rect x="240" y="26" width="10" height="44" rx="5"/><rect x="264" y="38" width="10" height="20" rx="5"/><rect x="288" y="22" width="10" height="52" rx="5"/><rect x="312" y="34" width="10" height="28" rx="5"/></g></svg>
+        </div>
+        <div data-n="3" style="display:grid;gap:10px">
+          <button class="cta spot" data-go="P-02">Spotify로 계속하기</button>
+          <button class="cta" data-go="P-02" style="background:#fff">Apple Music으로 계속하기</button>
+        </div>
+        <p class="sub" style="text-align:center;font-size:14px;margin-top:14px" data-n="4">Spotify Premium 또는 Apple Music 구독으로 이용합니다</p>
+      </section>
+
+      <section class="screen" id="P-02">
+        <button class="back" data-go="P-01">‹ 이전 · 1/2</button>
+        <h2 class="t" data-n="1">달릴 때 듣고 싶은<br>장르를 골라 주세요</h2>
+        <p class="sub" style="margin-top:8px">3개 이상 선택하면 선곡이 정확해집니다.</p>
+        <div class="chips" data-n="2">
+          <button class="chip sel">K-POP</button><button class="chip sel">EDM</button>
+          <button class="chip">힙합</button><button class="chip sel">팝</button>
+          <button class="chip">록</button><button class="chip">R&amp;B</button>
+          <button class="chip">인디</button><button class="chip">라틴</button>
+        </div>
+        <div class="grow"></div>
+        <p class="sub" style="text-align:center;font-size:14px;margin-bottom:12px" data-n="3">3개 선택됨</p>
+        <button class="cta" data-go="P-03" data-n="4">다음</button>
+      </section>
+
+      <section class="screen" id="P-03">
+        <button class="back" data-go="P-02">‹ 이전 · 2/2</button>
+        <h2 class="t">러닝 준비를<br>마칩니다</h2>
+        <div style="margin-top:20px">
+          <div class="perm" data-n="1"><div>동작 및 피트니스<small>케이던스 측정</small></div><span class="ok">허용됨</span></div>
+          <div class="perm" data-n="2"><div>위치<small>러닝 경로와 페이스 기록</small></div><span class="ok">항상 허용</span></div>
+          <div class="perm" data-n="3"><div>Apple Watch<small>손목에서 시작·제어</small></div><span class="ok">연결됨</span></div>
+          <div class="perm"><div>음악 서비스<small>Spotify Premium</small></div><span class="ok">연결됨</span></div>
+        </div>
+        <div class="grow"></div>
+        <p class="sub" style="font-size:14px;margin-bottom:12px" data-n="4">달리는 동안 주변 소리에 주의해 주세요.</p>
+        <button class="cta" data-go="P-04">시작하기</button>
+      </section>
+
+      <section class="screen" id="P-04">
+        <div class="row" style="margin-bottom:14px"><h2 class="t" style="font-size:28px">오늘의 러닝</h2><span class="tag volt" data-n="1">⌚ 연결됨</span></div>
+        <div class="card row" data-n="2" style="margin-bottom:14px"><div><div class="lbl">지난 러닝 평균</div><div class="num" style="font-size:28px">172 SPM</div></div><div style="text-align:right"><div class="lbl">BPM 일치</div><div class="num" style="font-size:28px;color:var(--volt)">78%</div></div></div>
+        <div data-n="3" style="display:grid;gap:10px">
+          <button class="card sel" data-pick="auto" style="text-align:left"><b style="font-size:20px">오토 싱크</b><p class="sub" style="font-size:14px;margin-top:4px">지금 내 케이던스에 음악을 맞춥니다</p></button>
+          <button class="card" data-pick="guide" style="text-align:left"><b style="font-size:20px">케이던스 유도</b><p class="sub" style="font-size:14px;margin-top:4px">목표 SPM까지 음악이 이끌어 줍니다</p></button>
+          <button class="card" data-pick="interval" style="text-align:left"><b style="font-size:20px">인터벌</b><p class="sub" style="font-size:14px;margin-top:4px">구간마다 곡과 강도가 전환됩니다</p></button>
+        </div>
+        <div class="grow"></div>
+        <button class="cta" data-start="1" data-n="4">러닝 시작</button>
+        <div class="tabbar"><button class="on" data-go="P-04">러닝</button><button data-go="P-09">기록</button><button data-go="P-12">설정</button></div>
+      </section>
+
+      <section class="screen" id="P-05">
+        <button class="back" data-go="P-04">‹ 케이던스 유도</button>
+        <h2 class="t">목표 케이던스</h2>
+        <div class="grow" style="display:flex;flex-direction:column;justify-content:center;align-items:center">
+          <div class="num" style="font-size:112px;color:var(--volt);line-height:1" data-n="1" data-s="gtgt">175</div>
+          <div class="lbl" style="font-size:16px;margin-top:4px">SPM</div>
+          <div class="ctrl" style="margin-top:20px" data-n="2"><button type="button" data-gstep="-1" aria-label="1 감소">−</button><button type="button" data-gstep="1" aria-label="1 증가">+</button></div>
+        </div>
+        <div class="card" data-n="3">
+          <div class="row"><span class="lbl" data-s="gcur">현재 168</span><span class="lbl" data-s="gtl">목표 175</span></div>
+          <svg viewBox="0 0 320 70" style="width:100%;margin-top:6px" aria-hidden="true"><polyline points="4,62 60,62 60,48 120,48 120,36 180,36 180,24 240,24 240,10 316,10" fill="none" stroke="#D4FF3A" stroke-width="5" stroke-linejoin="round"/></svg>
+          <p class="sub" style="font-size:14px;margin-top:6px">곡마다 +2~3 SPM씩 올라갑니다</p>
+        </div>
+        <button class="cta" style="margin-top:14px" data-go="P-07" data-n="4">유도 시작</button>
+      </section>
+
+      <section class="screen" id="P-06">
+        <button class="back" data-go="P-04">‹ 인터벌</button>
+        <h2 class="t">프리셋 선택</h2>
+        <div style="display:grid;gap:10px;margin-top:16px" data-n="1">
+          <div class="card sel"><div class="row"><b style="font-size:19px">기본 인터벌</b><span class="lbl">30분</span></div><p class="sub" style="font-size:14px;margin:4px 0 10px">고강도 3분 + 조깅 2분 × 4회</p>
+            <div class="seg" data-n="2"><i class="w" style="flex:5"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="w" style="flex:5"></i></div></div>
+          <div class="card"><div class="row"><b style="font-size:19px">스피드</b><span class="lbl">28분</span></div><p class="sub" style="font-size:14px;margin-top:4px">고강도 1분 + 조깅 1분 × 8회</p></div>
+          <div class="card"><div class="row"><b style="font-size:19px">지구력</b><span class="lbl">47분</span></div><p class="sub" style="font-size:14px;margin-top:4px">고강도 5분 + 조깅 3분 × 4회</p></div>
+        </div>
+        <div class="card row" style="margin-top:10px" data-n="3"><span class="lbl">고강도 목표</span><div class="step"><button type="button" data-step="-1" aria-label="1 감소">−</button><b class="num" data-s="hiVal" style="font-size:22px;color:var(--coral);min-width:96px;text-align:center">178 SPM</b><button type="button" data-step="1" aria-label="1 증가">+</button></div></div>
+        <div class="grow"></div>
+        <button class="cta" data-go="P-08" data-n="4">인터벌 시작</button>
+      </section>
+
+      <section class="screen" id="P-07">
+        <div class="row"><span class="tag volt" data-n="1" data-s="modename">오토 싱크</span><span class="num" style="font-size:22px" data-s="clock">18:42</span></div>
+        <div style="text-align:center;margin-top:26px" data-n="2">
+          <div class="num" style="font-size:136px;line-height:1" data-s="spm">172</div>
+          <div class="lbl" style="font-size:18px">SPM</div>
+        </div>
+        <div style="text-align:center;margin-top:18px" data-n="3"><span class="tag volt" style="font-size:16px;padding:7px 16px" data-s="sync">곡 174 BPM · 싱크 ±2</span></div>
+        <div class="metrics" style="margin-top:28px" data-n="4">
+          <div><b class="num" data-s="dist">3.12</b><span class="lbl">km</span></div><div><b class="num" data-s="pace">6'00"</b><span class="lbl">/km</span></div><div><b class="num" data-s="hr">148</b><span class="lbl">bpm 심박</span></div>
+        </div>
+        <div class="grow"></div>
+        <div class="card" data-n="5" id="np7">
+          <div class="np"><div class="art" data-art></div><div style="flex:1"><b data-s="title">Midnight Stride</b><span data-s="artist">Neon Harbor</span></div></div>
+          <div class="row" style="margin-top:10px"><span class="spot-link"><i></i>Spotify에서 재생 중</span><button class="tag" data-next="1">다음 곡 ›</button></div>
+        </div>
+        <div class="ctrl"><button class="main" data-go="P-09">II</button></div>
+      </section>
+
+      <section class="screen" id="P-08">
+        <div class="row"><span class="tag acc" data-n="1" data-s="seglabel">고강도 2/4</span><span class="lbl" style="color:#fff" data-s="totalclock">전체 16:05</span></div>
+        <div style="text-align:center;margin-top:22px" data-n="2">
+          <div class="lbl" style="font-size:18px;color:#fff">남은 시간</div>
+          <div class="num" style="font-size:112px;line-height:1.05;color:var(--acc)" data-s="remain">02:14</div>
+        </div>
+        <div class="row" style="margin-top:18px" data-n="3">
+          <div class="card" style="flex:1;text-align:center"><div class="lbl" style="color:#fff">현재</div><div class="num" style="font-size:40px" data-s="spm">176</div></div>
+          <div class="card" style="flex:1;text-align:center"><div class="lbl" style="color:#fff">목표</div><div class="num" style="font-size:40px;color:var(--acc)" data-s="tgt">178</div></div>
+        </div>
+        <div style="margin-top:18px" data-n="4">
+          <div class="seg" data-seg="p"><i class="w" style="flex:5"></i><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3;outline:2px solid #fff"></i><i style="flex:2"></i><i style="flex:3"></i><i style="flex:2"></i><i style="flex:3"></i><i style="flex:2"></i><i style="flex:5"></i></div>
+          <p class="sub" style="font-size:15px;margin-top:8px;color:#fff" data-s="next">다음: 조깅 2:00 · 160 SPM</p>
+        </div>
+        <div class="grow"></div>
+        <div class="card" data-n="5">
+          <div class="np"><div class="art c" data-art></div><div style="flex:1"><b data-s="title">Red Line Run</b><span data-s="artist8">Kilo Motion · 178 BPM · Energy 상</span></div></div>
+          <div style="margin-top:10px"><span class="spot-link"><i></i>Spotify에서 재생 중</span></div>
+        </div>
+        <div class="ctrl"><button class="main accbtn" data-go="P-09">II</button></div>
+      </section>
+
+      <section class="screen" id="P-09">
+        <div class="row"><h2 class="t" style="font-size:28px">러닝 리포트</h2><span class="lbl">11월 9일</span></div>
+        <div class="card" style="margin-top:12px;padding:0;overflow:hidden" data-n="1">
+          <svg viewBox="0 0 350 200" style="display:block;width:100%" aria-hidden="true"><rect width="350" height="200" fill="#1F2329"/><g stroke="#30353D" stroke-width="10" fill="none"><path d="M0 60H350"/><path d="M0 140H350"/><path d="M90 0V200"/><path d="M250 0V200"/></g><path d="M64 164C100 110 90 60 150 44S260 46 288 92 240 160 190 150" fill="none" stroke="#D4FF3A" stroke-width="6" stroke-linecap="round"/><path d="M34 180L64 164" stroke="#6A707A" stroke-width="6" stroke-dasharray="3 9" stroke-linecap="round"/><path d="M190 150L160 168" stroke="#6A707A" stroke-width="6" stroke-dasharray="3 9" stroke-linecap="round"/></svg>
+        </div>
+        <div class="metrics" style="margin-top:16px" data-n="2"><div><b class="num" data-s="rdist">5.00</b><span class="lbl">km</span></div><div><b class="num" data-s="rtime">30:00</b><span class="lbl">시간</span></div><div><b class="num" data-s="rpace">6'00"</b><span class="lbl">/km</span></div></div>
+        <div class="card row" style="margin-top:14px" data-n="3"><div><div class="lbl">BPM 일치율</div><div class="num" style="font-size:40px;color:var(--volt)" data-s="rmatch">78%</div></div><div style="text-align:right"><div class="lbl">평균 케이던스</div><div class="num" style="font-size:40px" data-s="ravg">172</div></div></div>
+        <div class="grow"></div>
+        <button class="cta ghost" data-go="P-10" data-n="4" style="margin-bottom:10px">구간별 곡 보기</button>
+        <button class="cta" data-go="P-11">카드 만들기</button>
+        <div class="tabbar"><button data-go="P-04">러닝</button><button class="on" data-go="P-09">기록</button><button data-go="P-12">설정</button></div>
+      </section>
+
+      <section class="screen" id="P-10">
+        <button class="back" data-go="P-09">‹ 러닝 리포트</button>
+        <h2 class="t" style="font-size:28px">케이던스와 음악</h2>
+        <div class="card" style="margin-top:12px" data-n="1">
+          <div class="row"><span class="lbl">SPM 흐름</span><span class="tag">150–190</span></div>
+          <svg viewBox="0 0 320 110" style="width:100%;margin-top:8px" aria-hidden="true"><polyline points="4,90 40,70 76,52 112,56 148,42 184,46 220,36 256,40 316,34" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linejoin="round"/><polyline points="4,84 76,84 76,50 148,50 148,44 220,44 220,38 316,38" fill="none" stroke="#D4FF3A" stroke-width="4" stroke-dasharray="8 6"/></svg>
+          <div class="row" style="justify-content:flex-start;margin-top:6px;gap:16px"><span class="lbl">— 케이던스</span><span class="lbl" style="color:var(--volt)">‑‑ 곡 BPM</span></div>
+        </div>
+        <div style="margin-top:12px" data-n="2">
+          <div class="track"><div class="art"></div><div style="flex:1"><b>Midnight Stride</b><span>Neon Harbor · 리듬 유지 92점</span></div><span class="tag volt">174</span></div>
+          <div class="track"><div class="art b"></div><div style="flex:1"><b>Sidewalk Static</b><span>Paper Comets · 리듬 유지 88점</span></div><span class="tag volt">172</span></div>
+          <div class="track"><div class="art c"></div><div style="flex:1"><b>Red Line Run</b><span>Kilo Motion · 리듬 유지 95점</span></div><span class="tag volt">178</span></div>
+          <div class="track"><div class="art b"></div><div style="flex:1"><b>Han River Lights</b><span>Sora Vale · 리듬 유지 71점</span></div><span class="tag">86×2</span></div>
+        </div>
+        <div class="grow"></div>
+        <div class="spot-link" style="justify-content:center;margin-bottom:12px" data-n="3"><i></i>OPEN SPOTIFY</div>
+        <button class="cta" data-go="P-11" data-n="4">카드 만들기</button>
+      </section>
+
+      <section class="screen" id="P-11">
+        <button class="back" data-go="P-09">‹ 공유 카드</button>
+        <div style="flex:1;display:flex;justify-content:center;align-items:center">
+          <div data-n="1" style="position:relative;width:290px;height:515px;border-radius:24px;background:#000;box-shadow:0 0 0 2px #33373E;padding:24px 20px;display:flex;flex-direction:column">
+            <div class="eyebrow">PACEBEATS</div>
+            <div class="num" style="font-size:66px;line-height:1.05;margin-top:10px"><span data-s="rdist">5.00</span><span style="font-size:24px"> km</span></div>
+            <div class="sub" style="font-size:15px"><span data-s="rtime">30:00</span> · <span data-s="rpace">6'00"</span>/km</div>
+            <svg viewBox="0 0 250 150" style="margin:16px 0" data-n="2" aria-hidden="true"><path d="M44 122C70 82 64 44 108 32S190 34 210 68 174 118 138 112" fill="none" stroke="#D4FF3A" stroke-width="6" stroke-linecap="round"/></svg>
+            <div class="row"><div><div class="lbl">평균 SPM</div><div class="num" style="font-size:30px" data-s="ravg">172</div></div><div><div class="lbl">BPM 일치</div><div class="num" style="font-size:30px;color:var(--volt)" data-s="rmatch">78%</div></div></div>
+            <div class="grow"></div>
+            <div class="np" data-n="3"><div class="art" data-art style="width:42px;height:42px"></div><div><b style="font-size:14px" data-s="title">Midnight Stride</b><span style="font-size:12px" data-s="artist">Neon Harbor</span></div></div>
+            <div class="spot-link" style="margin-top:8px"><i></i>Spotify</div>
+          </div>
+        </div>
+        <div class="row" data-n="4" style="margin-top:14px"><button class="cta ghost">이미지 저장</button><button class="cta">스토리 공유</button></div>
+      </section>
+
+      <section class="screen" id="P-12">
+        <h2 class="t" style="font-size:28px;margin-bottom:12px">설정</h2>
+        <div class="perm" data-n="1"><div>선호 장르<small>K-POP, EDM, 팝</small></div><span class="lbl">›</span></div>
+        <div class="perm" data-n="2"><div>음악 서비스<small>Spotify Premium · Apple Music 전환</small></div><span class="lbl">›</span></div>
+        <div class="perm"><div>Apple Watch<small>Apple Watch Series 11</small></div><span class="ok">연결됨</span></div>
+        <div class="perm" data-n="3"><div>음성 안내·햅틱<small>구간 카운트다운</small></div><span class="ok">켜짐</span></div>
+        <div class="perm" data-n="4"><div>경로 마스킹<small>시작·종료 200m 숨김</small></div><span class="ok">켜짐</span></div>
+        <div class="perm"><div>건강 앱 연동<small>Apple 건강에 러닝 기록 저장</small></div><span class="ok">켜짐</span></div>
+        <div class="perm"><div>데이터 출처<small>Deezer · GetSongBPM</small></div><span class="lbl">›</span></div>
+        <div class="grow"></div>
+        <button class="cta ghost" style="color:var(--coral)">러닝 기록 전체 삭제</button>
+        <div class="tabbar"><button data-go="P-04">러닝</button><button data-go="P-09">기록</button><button class="on" data-go="P-12">설정</button></div>
+      </section>
+
+      <div class="status"><span>9:41</span><span>5G 87%</span></div>
+      <div class="island"></div>
+      <div class="home"></div>
+    </div>
+
+    <div class="watch" id="watch">
+      <section class="screen" id="W-01">
+        <span class="wtitle">페이스비츠</span><span class="wtime">9:41</span>
+        <div style="margin-top:14px;text-align:center" data-n="1"><b style="font-size:21px" data-s="modename">오토 싱크</b><div class="lbl">‹ 모드 변경 ›</div></div>
+        <div class="grow" style="display:flex;align-items:center;justify-content:center" data-n="2"><span class="tag" style="font-size:12px">⌁ iPhone 연결됨</span></div>
+        <button class="cta" data-w="W-02" data-n="3">시작</button>
+      </section>
+      <section class="screen" id="W-02" style="align-items:center;justify-content:center">
+        <div class="num" style="font-size:112px;line-height:1;color:var(--volt)" data-n="1" data-s="count">3</div>
+        <div class="lbl" style="font-size:14px;margin-top:4px" data-n="2">손목 진동과 함께 시작</div>
+      </section>
+      <section class="screen" id="W-03">
+        <span class="wtitle" data-n="1" data-s="modename">오토 싱크</span><span class="wtime" data-s="clock">18:42</span>
+        <div style="text-align:center;margin-top:16px" data-n="2"><div class="num" style="font-size:78px;line-height:1" data-s="spm">172</div><div class="lbl" style="font-size:13px">SPM</div></div>
+        <div class="grow" style="display:flex;align-items:center;justify-content:center" data-n="3"><span class="tag volt" style="font-size:13px" data-s="syncw">곡 174 · 싱크 ±2</span></div>
+        <div class="row" style="font-size:15px" data-n="4"><b class="num"><span data-s="dist">3.12</span> km</b><b class="num" data-s="pace">6'00"</b></div>
+      </section>
+      <section class="screen" id="W-04">
+        <span class="wtitle">재생 중</span><span class="wtime" data-s="clock">18:50</span>
+        <div style="margin-top:18px" data-n="1"><b style="font-size:17px;display:block" data-s="title">Midnight Stride</b><span class="lbl" data-s="artist">Neon Harbor</span></div>
+        <div class="spot-link" style="margin-top:6px;font-size:12px" data-n="2"><i style="width:11px;height:11px"></i>Spotify</div>
+        <div class="grow"></div>
+        <div class="row" style="justify-content:center;gap:12px" data-n="3">
+          <button style="width:68px;height:60px;border-radius:30px;background:var(--volt);color:var(--ink);font-size:22px;font-weight:800">II</button>
+          <button style="width:68px;height:60px;border-radius:30px;background:var(--surface2);font-size:22px">››</button>
+        </div>
+        <div class="lbl" style="text-align:center;margin-top:5px" data-n="4">Crown으로 볼륨</div>
+      </section>
+      <section class="screen" id="W-05">
+        <span class="wtitle" style="color:var(--acc)" data-n="1" data-s="seglabel">고강도 2/4</span><span class="wtime" data-s="clock">16:05</span>
+        <div style="text-align:center;margin-top:20px" data-n="2"><div class="num" style="font-size:54px;line-height:1;color:var(--acc)" data-s="remain">02:14</div></div>
+        <div class="grow"></div>
+        <div class="row" style="justify-content:center;gap:18px" data-n="3"><div style="text-align:center"><div class="num" style="font-size:32px" data-s="spm">176</div><div class="lbl">현재</div></div><div style="text-align:center"><div class="num" style="font-size:32px;color:var(--acc)" data-s="tgt">178</div><div class="lbl">목표</div></div></div>
+        <div class="seg" style="height:7px;margin-top:8px" data-n="4" data-seg="w"><i class="h" style="flex:3"></i><i class="j" style="flex:2"></i><i class="h" style="flex:3"></i><i style="flex:2"></i><i style="flex:3"></i><i style="flex:2"></i></div>
+      </section>
+      <section class="screen" id="W-06" style="background:var(--volt);color:var(--ink);align-items:center;justify-content:center;text-align:center">
+        <div style="font-size:15px;font-weight:700" data-n="1">다음 구간</div>
+        <div style="font-size:44px;font-weight:800;line-height:1.1;margin:4px 0" data-n="2" data-s="nextname">조깅</div>
+        <div class="num" style="font-size:30px" data-n="3" data-s="nextspm">160 SPM</div>
+        <div style="font-size:13px;font-weight:600;margin-top:6px" data-n="4" data-s="cd">3초 후 곡 전환</div>
+      </section>
+      <section class="screen" id="W-07">
+        <span class="wtitle" data-n="1">일시정지</span><span class="wtime" data-s="clock">30:00</span>
+        <div class="grow" style="display:flex;flex-direction:column;justify-content:center;gap:10px;margin-top:18px">
+          <button class="cta" data-w="W-03" data-n="2">재개</button>
+          <button class="cta ghost" style="color:var(--coral)" data-w="W-08" data-n="3">종료</button>
+        </div>
+      </section>
+      <section class="screen" id="W-08">
+        <span class="wtitle" data-n="1">러닝 완료</span><span class="wtime">9:41</span>
+        <div style="margin-top:18px" data-n="2"><div class="num" style="font-size:42px;line-height:1"><span data-s="rdist">5.00</span><span style="font-size:17px"> km</span></div><div class="lbl" style="font-size:13px"><span data-s="rtime">30:00</span> · <span data-s="rpace">6'00"</span>/km</div></div>
+        <div class="grow"></div>
+        <div class="row" data-n="3"><div><div class="lbl">평균</div><b class="num" style="font-size:24px" data-s="ravg">172</b></div><div><div class="lbl">BPM 일치</div><b class="num" style="font-size:24px;color:var(--volt)" data-s="rmatch">78%</b></div></div>
+        <div class="lbl" style="text-align:center;margin-top:5px" data-n="4">iPhone에서 리포트 보기</div>
+      </section>
+    </div>
+
+    <aside class="sim" id="sim" aria-label="러닝 시연 패널">
+      <div class="sim-head"><span>러닝 시연</span><small>막대를 움직여 보세요</small></div>
+      <div class="mode-tog" role="group" aria-label="모드">
+        <button type="button" data-mode="auto" class="on">오토 싱크</button>
+        <button type="button" data-mode="guide">케이던스 유도</button>
+        <button type="button" data-mode="interval">인터벌</button>
+      </div>
+      <div class="runbox">
+        <svg viewBox="0 0 340 320" aria-hidden="true">
+          <defs>
+            <pattern id="skyPat" width="150" height="320" patternUnits="userSpaceOnUse">
+              <g fill="#22262D"><rect x="0" y="190" width="28" height="100"/><rect x="34" y="225" width="22" height="65"/><rect x="62" y="160" width="34" height="130"/><rect x="102" y="235" width="20" height="55"/><rect x="128" y="205" width="18" height="85"/></g>
+            </pattern>
+          </defs>
+          <rect width="340" height="320" fill="url(#skyPat)"/>
+          <rect y="290" width="340" height="30" fill="#101216"/>
+          <line id="gLine" x1="0" y1="290" x2="340" y2="290" stroke="#4A4E56" stroke-width="4" stroke-dasharray="26 22"/>
+          <g id="spd" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity="0"><line x1="24" y1="150" x2="84" y2="150"/><line x1="40" y1="186" x2="102" y2="186"/><line x1="18" y1="222" x2="70" y2="222"/></g>
+          <ellipse cx="170" cy="292" rx="46" ry="5" fill="rgba(0,0,0,.5)"/>
+          <g fill="none" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+            <polyline id="farArm" stroke="#8FA82A" points="0,0 0,0 0,0"/>
+            <polyline id="farLeg" stroke="#A4ABB5" points="0,0 0,0 0,0"/>
+          </g>
+          <line id="torso" stroke="#D4FF3A" stroke-width="22" stroke-linecap="round" x1="170" y1="180" x2="170" y2="120"/>
+          <circle id="head" r="15" fill="#F2F2F2" cx="170" cy="96"/>
+          <g fill="none" stroke-width="13" stroke-linecap="round" stroke-linejoin="round">
+            <polyline id="nearLeg" stroke="#FFFFFF" points="0,0 0,0 0,0"/>
+            <polyline id="nearArm" stroke="#D4FF3A" points="0,0 0,0 0,0"/>
+          </g>
+        </svg>
+        <span class="chip-st" id="stChip">대기 중</span>
+        <span class="chip-mu" id="muChip">♪ Midnight Stride</span>
+        <div class="toast" id="toast"></div>
+        <div class="pulses"><span><i id="mDot"></i><b id="mTxt">♪ 174 BPM</b></span><span><b id="sTxt">발걸음 172 SPM</b><i id="sDot"></i></span></div>
+      </div>
+      <div class="ctl">
+        <div class="row"><span class="lbl">페이스 조절</span><b class="num" id="paceTxt" style="font-size:15px">172 SPM · 6'00"/km</b></div>
+        <input type="range" id="paceR" min="140" max="200" step="1" value="172" aria-label="페이스 조절">
+        <div class="row"><span class="lbl">느리게</span><span class="lbl" id="paceHint" style="color:var(--text)"></span><span class="lbl">빠르게</span></div>
+      </div>
+      <div class="ctl">
+        <div class="row"><span class="lbl">러닝 타임라인</span><b class="num" id="tlTxt" style="font-size:15px">00:00 / 30:00</b></div>
+        <div class="tl"><div class="strip" id="strip"></div><input type="range" id="tlR" min="0" max="1000" step="1" value="0" aria-label="러닝 타임라인"></div>
+        <div class="row"><button type="button" class="mini" id="goStart">달리기 시작</button><button type="button" class="play" id="playBtn">▶ 재생</button><button type="button" class="mini" id="goEnd">달리기 종료</button></div>
+      </div>
+    </aside>
+  </div>
+  <div class="picker" id="picker"></div>
+</div>
+<script>
+  var query = new URLSearchParams(location.search);
+  var embedded = query.get('screen');
+  var sim = null;
+  var last = { p: null, w: null };
+
+  // 직선과 곡선이 부드럽게 이어지는 연속 곡률 모서리 경로 (smoothing 0.6)
+  function squircle(w, h, r, smoothing) {
+    var rad = function (deg) { return deg * Math.PI / 180; };
+    var p = (1 + smoothing) * r;
+    var arcMeasure = 90 * (1 - smoothing);
+    var arc = Math.sin(rad(arcMeasure / 2)) * r * Math.SQRT2;
+    var alpha = (90 - arcMeasure) / 2;
+    var p3p4 = r * Math.tan(rad(alpha / 2));
+    var beta = 45 * smoothing;
+    var c = p3p4 * Math.cos(rad(beta));
+    var d = c * Math.tan(rad(beta));
+    var b = (p - arc - c - d) / 3;
+    var a = 2 * b;
+    var s = a + b, t = a + b + c, u = b + c;
+    var A = 'a' + r + ' ' + r + ' 0 0 1 ';
+    return [
+      'M', w - p, 0,
+      'c', a, 0, s, 0, t, d, A, arc, arc, 'c', d, c, d, u, d, t,
+      'L', w, h - p,
+      'c', 0, a, 0, s, -d, t, A, -arc, arc, 'c', -c, d, -u, d, -t, d,
+      'L', p, h,
+      'c', -a, 0, -s, 0, -t, -d, A, -arc, -arc, 'c', -d, -c, -d, -u, -d, -t,
+      'L', 0, p,
+      'c', 0, -a, 0, -s, d, -t, A, arc, -arc, 'c', c, -d, u, -d, t, -d,
+      'Z'
+    ].join(' ');
+  }
+  function buildDevice(id, w, h, r, inset) {
+    var device = document.getElementById(id);
+    var ns = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('class', 'device-shell');
+    svg.setAttribute('aria-hidden', 'true');
+    [[-2, w + 4, h + 4, r + 2, '#4A4E56'], [0, w, h, r, '#000']].forEach(function (v) {
+      var path = document.createElementNS(ns, 'path');
+      path.setAttribute('d', squircle(v[1], v[2], v[3], 0.6));
+      path.setAttribute('transform', 'translate(' + v[0] + ' ' + v[0] + ')');
+      path.setAttribute('fill', v[4]);
+      svg.appendChild(path);
+    });
+    device.insertBefore(svg, device.firstChild);
+    var clip = "path('" + squircle(w - inset * 2, h - inset * 2, r - inset, 0.6) + "')";
+    device.querySelectorAll('.screen').forEach(function (s) { s.style.clipPath = clip; });
+  }
+  buildDevice('iphone', 417, 876, 66, 12);
+  buildDevice('watch', 226, 270, 58, 14);
+
+  function show(id, group) {
+    var box = document.getElementById(group);
+    box.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('on', s.id === id); });
+    last[group === 'iphone' ? 'p' : 'w'] = id;
+    document.querySelectorAll('.picker button').forEach(function (b) {
+      if (b.dataset.group === group) b.classList.toggle('on', b.textContent === id);
+    });
+  }
+  function goPhone(id) {
+    if (sim) sim.beforeGo(id);
+    show(id, 'iphone');
+    if (sim) sim.afterGo();
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest('[data-go],[data-w]');
+    if (!b || embedded) return;
+    if (b.dataset.go) goPhone(b.dataset.go);
+    else if (sim) sim.watchBtn(b.dataset.w);
+    else show(b.dataset.w, 'watch');
+  });
+  var picker = document.getElementById('picker');
+  ['iphone', 'watch'].forEach(function (group) {
+    document.getElementById(group).querySelectorAll('.screen').forEach(function (s) {
+      var b = document.createElement('button');
+      b.textContent = s.id; b.dataset.group = group;
+      b.addEventListener('click', function () { group === 'iphone' ? goPhone(s.id) : show(s.id, 'watch'); });
+      picker.appendChild(b);
+    });
+  });
+  // 스토리보드용 번호 표시
+  window.annotate = function (on) {
+    document.querySelectorAll('.mark').forEach(function (m) { m.remove(); });
+    if (!on) return;
+    document.querySelectorAll('.screen.on').forEach(function (s) {
+      var device = s.closest('.iphone,.watch');
+      if (!device.offsetWidth) return;
+      var small = device.classList.contains('watch'), size = small ? 16 : 24;
+      var base = device.getBoundingClientRect();
+      s.querySelectorAll('[data-n]').forEach(function (el) {
+        var r = el.getBoundingClientRect();
+        var m = document.createElement('div');
+        m.className = 'mark'; m.textContent = el.dataset.n;
+        m.style.width = m.style.height = size + 'px';
+        m.style.fontSize = (small ? 10 : 14) + 'px';
+        var top = r.height < 64 ? r.top + r.height / 2 - size / 2 : r.top + 4;
+        m.style.left = Math.max(1, r.left - base.left - size - 1) + 'px';
+        m.style.top = (top - base.top) + 'px';
+        device.appendChild(m);
+      });
+    });
+  };
+
+  /* ---------- 러닝 시연 ---------- */
+  function makeSim() {
+    var $ = function (id) { return document.getElementById(id); };
+    var qa = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+    var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+    var p2 = function (n) { return (n < 10 ? '0' : '') + n; };
+    var mmss = function (s) { s = Math.floor(s); return p2(Math.floor(s / 60)) + ':' + p2(s % 60); };
+    var dur = function (s) { return Math.floor(s / 60) + ':' + p2(s % 60); };
+    var paceStr = function (sec) { sec = Math.round(sec); return Math.floor(sec / 60) + "'" + p2(sec % 60) + '"'; };
+
+    var STRIDE = 0.969;          // 보폭(m). 172 SPM에서 6'00"/km, 30분에 5.00km
+    var RUN0 = 0.04, RUN1 = 0.96; // 타임라인 비율: 카운트다운 끝, 일시정지 시작
+    var TOTAL = 1800;            // 시연용 러닝 타임라인 30:00
+    var G = 290, HX = 170, L1 = 54, L2 = 54, T = 64, A1 = 34, A2 = 32, R = Math.PI / 180;
+
+    var LIB = [
+      ['Morning Loop', 'Pale Signal', 140, ''], ['Easy Mile', 'Sora Vale', 145, 'b'],
+      ['Tide Walker', 'Neon Harbor', 150, 'c'], ['Soft Asphalt', 'Paper Comets', 155, ''],
+      ['Warm Lights', 'Kilo Motion', 160, 'b'], ['Crosswalk', 'Sora Vale', 165, 'c'],
+      ['Pace Maker', 'Neon Harbor', 168, ''], ['Sidewalk Static', 'Paper Comets', 172, 'b'],
+      ['Midnight Stride', 'Neon Harbor', 174, ''], ['Red Line Run', 'Kilo Motion', 178, 'c'],
+      ['Overdrive', 'Neon Harbor', 182, ''], ['Final Kilometer', 'Paper Comets', 186, 'b'],
+      ['Sprint Theory', 'Kilo Motion', 190, 'c'], ['Afterburn', 'Pale Signal', 195, ''],
+      ['Redline Zero', 'Sora Vale', 200, 'b']
+    ].map(function (a) { return { t: a[0], a: a[1], bpm: a[2], c: a[3] }; });
+
+    var S = { play: false, rate: 1, mode: 'auto', sel: false, gt: 175, gs: 168, lastK: null, t: 0, spm: 172, hi: 178, song: LIB[8], over: false, lastSi: null, nextI: 0, V: null };
+
+    var nodes = {};
+    qa('[data-s]').forEach(function (el) { (nodes[el.dataset.s] = nodes[el.dataset.s] || []).push(el); });
+    var arts = qa('[data-art]'), segBars = qa('[data-seg]');
+    var paceR = $('paceR'), tlR = $('tlR'), stripEl = $('strip'), toastEl = $('toast');
+    var stripKey = null;
+
+    function segs() {
+      var a = [{ type: 'warm', cls: 'w', len: 300, tg: 165, name: '워밍업', short: '워밍업' }];
+      for (var i = 1; i <= 4; i++) {
+        a.push({ type: 'hi', cls: 'h', len: 180, tg: S.hi, name: '고강도 ' + i + '/4', short: '고강도', n: i });
+        a.push({ type: 'jog', cls: 'j', len: 120, tg: 160, name: '조깅 ' + i + '/4', short: '조깅', n: i });
+      }
+      a.push({ type: 'cool', cls: 'w', len: 300, tg: 155, name: '쿨다운', short: '쿨다운' });
+      return a;
+    }
+    function songFor(seg) {
+      var c = LIB.filter(function (l) { return Math.abs(l.bpm - seg.tg) <= 6; })
+        .sort(function (x, y) { return Math.abs(x.bpm - seg.tg) - Math.abs(y.bpm - seg.tg); });
+      if (!c.length) c = LIB.slice().sort(function (x, y) { return Math.abs(x.bpm - seg.tg) - Math.abs(y.bpm - seg.tg); });
+      return c[((seg.n || 1) - 1) % c.length];
+    }
+    var GLEN = 180; // 케이던스 유도: 곡 한 개 길이(초)
+    var POOL = [['Step Up', 'Neon Harbor', ''], ['Rising Tide', 'Sora Vale', 'b'], ['Higher Ground', 'Kilo Motion', 'c'],
+                ['Lift Off', 'Paper Comets', ''], ['Climb Line', 'Pale Signal', 'b'], ['Summit Beat', 'Neon Harbor', 'c']];
+    function ladder(k) { var b = S.gs, i; for (i = 0; i < k && b < S.gt; i++) b += (i % 2 === 0) ? 3 : 2; return Math.min(b, S.gt); }
+    function guideSong(k) { var p = POOL[k % POOL.length]; return { t: p[0], a: p[1], bpm: ladder(k), c: p[2] }; }
+    function energy(b) { return b >= 175 ? '상' : b >= 160 ? '중' : '하'; }
+
+    function calc() {
+      var f = S.t / 1000, iv = S.mode === 'interval', gd = S.mode === 'guide';
+      var total = TOTAL;
+      var phase = f <= 0 ? 'idle' : f < RUN0 ? 'count' : f < RUN1 ? 'run' : f < 1 ? 'pause' : 'done';
+      var e = f < RUN0 ? 0 : f >= RUN1 ? total : (f - RUN0) / (RUN1 - RUN0) * total;
+      var V = { f: f, iv: iv, gd: gd, total: total, phase: phase, e: e };
+      if (iv) {
+        var sg = segs(), songs = sg.map(songFor), cum = [], acc = 0, si = sg.length - 1, i;
+        sg.forEach(function (s, k) { cum[k] = acc; acc += s.len; });
+        for (i = 0; i < sg.length; i++) { if (e < cum[i] + sg[i].len) { si = i; break; } }
+        V.sg = sg; V.songs = songs; V.cum = cum; V.si = si; V.seg = sg[si];
+        V.song = songs[si]; V.spm = V.song.bpm;
+        V.rem = Math.max(0, Math.ceil(cum[si] + sg[si].len - e));
+        V.next = sg[si + 1] || null;
+        var d = 0, df = 0, wavg = 0, dev = 0;
+        sg.forEach(function (s, k) {
+          var used = clamp(e - cum[k], 0, s.len);
+          d += used * songs[k].bpm * STRIDE / 60000;
+          df += s.len * songs[k].bpm * STRIDE / 60000;
+          wavg += s.len * songs[k].bpm;
+          dev += s.len * Math.abs(songs[k].bpm - s.tg);
+        });
+        V.dist = d; V.rd = df; V.avg = wavg / total;
+        V.match = clamp(Math.round(88 - dev / total * 2), 50, 99);
+      } else if (gd) {
+        var k = Math.floor(e / GLEN), n = Math.ceil(total / GLEN), gdist = 0, gfull = 0, gw = 0;
+        V.k = k; V.song = guideSong(k); V.spm = V.song.bpm;
+        for (var j = 0; j < n; j++) {
+          var len = Math.min(GLEN, total - j * GLEN), b = ladder(j);
+          gdist += clamp(e - j * GLEN, 0, len) * b * STRIDE / 60000; gfull += len * b * STRIDE / 60000; gw += len * b;
+        }
+        V.dist = gdist; V.rd = gfull; V.avg = gw / total; V.match = 84;
+      } else {
+        V.song = S.song; V.spm = S.spm;
+        V.dist = e * S.spm * STRIDE / 60000;
+        V.rd = total * S.spm * STRIDE / 60000;
+        V.avg = S.spm;
+        V.match = clamp(80 - Math.abs(S.song.bpm - S.spm), 50, 99);
+      }
+      V.diff = gd ? S.gt - V.spm : Math.abs(V.song.bpm - V.spm);
+      V.pace = 60000 / (V.spm * STRIDE);
+      var adj = V.iv ? ({ warm: -10, hi: 8, jog: -4, cool: -18 })[V.seg.type] : 0;
+      V.hr = Math.round(clamp(148 + (V.spm - 172) * 0.9 + adj, 90, 190));
+      V.warn = iv && phase === 'run' && V.next && V.rem <= 5;
+      V.count = Math.max(1, Math.ceil(3 * (1 - f / RUN0)));
+      return V;
+    }
+
+    function desired(V) {
+      var d = {};
+      if (V.phase === 'idle') {
+        d.p = ['P-07', 'P-08', 'P-09', 'P-10', 'P-11'].indexOf(last.p) < 0 ? last.p : 'P-04';
+        d.w = 'W-01';
+      } else if (V.phase === 'done') {
+        d.p = 'P-09'; d.w = 'W-08';
+      } else {
+        d.p = V.iv ? 'P-08' : 'P-07';
+        if (V.phase === 'count') d.w = 'W-02';
+        else if (V.phase === 'pause') d.w = 'W-07';
+        else if (!V.iv) d.w = S.over ? 'W-04' : 'W-03';
+        else d.w = V.warn ? 'W-06' : 'W-05';
+      }
+      return d;
+    }
+    function sync(watchOnly) {
+      var d = desired(S.V);
+      if (!watchOnly && d.p && d.p !== last.p) show(d.p, 'iphone');
+      if (d.w !== last.w) show(d.w, 'watch');
+    }
+
+    var toastT;
+    function toast(msg) {
+      toastEl.textContent = msg; toastEl.classList.add('on');
+      clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('on'); }, 1900);
+    }
+    function setText(map) {
+      Object.keys(map).forEach(function (k) {
+        (nodes[k] || []).forEach(function (el) { if (el.textContent !== map[k]) el.textContent = map[k]; });
+      });
+    }
+    function segHTML(V) {
+      return V.sg.map(function (s, i) {
+        return '<i class="' + (i <= V.si ? s.cls : '') + '" style="flex:' + (s.len / 60) + (i === V.si ? ';outline:2px solid #fff' : '') + '"></i>';
+      }).join('');
+    }
+    function setPct(el) { el.style.setProperty('--pct', ((el.value - el.min) / (el.max - el.min) * 100) + '%'); }
+
+    function render() {
+      var V = S.V = calc(), m;
+      m = {
+        clock: mmss(V.e), spm: String(V.spm), dist: V.dist.toFixed(2), pace: paceStr(V.pace), hr: String(V.hr),
+        sync: '곡 ' + V.song.bpm + (V.gd ? ' BPM · 목표 ' + S.gt : ' BPM · 싱크 ±' + V.diff), syncw: '곡 ' + V.song.bpm + (V.gd ? ' · 목표 ' + S.gt : ' · 싱크 ±' + V.diff),
+        title: V.song.t, artist: V.song.a, artist8: V.song.a + ' · ' + V.song.bpm + ' BPM · Energy ' + energy(V.song.bpm),
+        modename: V.iv ? '인터벌' : V.gd ? '케이던스 유도' : '오토 싱크', gtgt: String(S.gt), gcur: '현재 ' + S.gs, gtl: '목표 ' + S.gt, count: String(V.count), hiVal: S.hi + ' SPM',
+        rdist: V.rd.toFixed(2), rtime: mmss(V.total), rpace: paceStr(60000 / (V.avg * STRIDE)),
+        ravg: String(Math.round(V.avg)), rmatch: V.match + '%'
+      };
+      if (V.iv) {
+        m.seglabel = V.seg.name; m.totalclock = '전체 ' + mmss(V.e); m.remain = mmss(V.rem);
+        m.tgt = String(V.seg.tg);
+        m.next = V.next ? '다음: ' + V.next.short + ' ' + dur(V.next.len) + ' · ' + V.next.tg + ' SPM' : '다음: 러닝 종료';
+        m.nextname = V.next ? V.next.short : '종료';
+        m.nextspm = V.next ? V.next.tg + ' SPM' : '';
+        m.cd = Math.max(1, V.rem) + '초 후 곡 전환';
+        var html = segHTML(V);
+        segBars.forEach(function (b) { if (b.dataset.html !== html) { b.innerHTML = html; b.dataset.html = html; } });
+        var calm = V.seg.type !== 'hi';
+        $('P-08').classList.toggle('calm', calm); $('W-05').classList.toggle('calm', calm);
+      }
+      setText(m);
+      arts.forEach(function (a) { a.className = 'art' + (V.song.c ? ' ' + V.song.c : ''); });
+
+      // 구간 전환 알림
+      if (V.iv && V.phase === 'run') {
+        if (S.lastSi !== null && S.lastSi !== V.si) toast('구간 전환 · ' + V.seg.name + ' · ' + V.song.t);
+        S.lastSi = V.si;
+      } else S.lastSi = null;
+      if (V.gd && V.phase === 'run') {
+        if (S.lastK !== null && S.lastK !== V.k) { toast('♪ 다음 곡 · ' + V.song.t + ' · ' + V.song.bpm + ' BPM (목표 ' + S.gt + ')'); flashSong(); }
+        S.lastK = V.k;
+      } else S.lastK = null;
+      qa('[data-pick]').forEach(function (b) { b.classList.toggle('sel', S.sel && b.dataset.pick === S.mode); });
+
+      // 패널
+      paceR.disabled = V.iv || V.gd || (S.play && V.phase === 'run'); paceR.value = V.spm; setPct(paceR);
+      tlR.value = S.t; setPct(tlR);
+      $('paceTxt').textContent = V.spm + ' SPM · ' + paceStr(V.pace) + '/km';
+      $('paceHint').textContent = V.iv ? '곡 BPM에 맞춤 · 잠금' : V.gd ? '곡 BPM이 이끄는 중 · 잠금' : (S.play && V.phase === 'run') ? '자동 페이스 조절 중' : '';
+      $('playBtn').textContent = S.play ? '❚❚ 일시정지' : '▶ 재생';
+      $('tlTxt').textContent = mmss(V.e) + ' / ' + mmss(V.total);
+      qa('.mode-tog button').forEach(function (b) { b.classList.toggle('on', b.dataset.mode === S.mode); });
+      var st = { idle: '대기 중', count: '카운트다운 ' + V.count, run: '러닝 중', pause: '일시정지', done: '러닝 완료' }[V.phase];
+      $('stChip').textContent = st + (V.iv && V.phase === 'run' ? ' · ' + V.seg.name : '') + (S.play && V.phase === 'run' ? ' · ' + (S.rate === 1 ? '정속' : S.rate + '×') : '');
+      $('muChip').textContent = '♪ ' + V.song.t;
+      $('mTxt').textContent = '♪ ' + V.song.bpm + ' BPM';
+      $('sTxt').textContent = '발걸음 ' + V.spm + ' SPM';
+      buildStrip(V);
+    }
+    function buildStrip(V) {
+      if (stripKey !== S.mode) {
+        stripKey = S.mode;
+        stripEl.innerHTML = V.iv
+          ? V.sg.map(function (s) { return '<i class="' + s.cls + '" style="flex:' + s.len + '"></i>'; }).join('')
+          : '<i style="flex:1"></i>';
+      }
+      var items = stripEl.children;
+      if (V.iv) {
+        for (var i = 0; i < items.length; i++) items[i].style.opacity = V.e >= V.cum[i] && V.phase !== 'idle' || i === 0 ? 1 : 0.3;
+      } else {
+        var p = V.e / V.total * 100;
+        items[0].style.background = 'linear-gradient(90deg,var(--volt) ' + p + '%,var(--surface2) ' + p + '%)';
+      }
+    }
+
+    // 자동 곡 선택 (오토 싱크)
+    var songT, overT;
+    function pickSong() {
+      if (S.mode !== 'auto') return;
+      var best = LIB.slice().sort(function (a, b) { return Math.abs(a.bpm - S.spm) - Math.abs(b.bpm - S.spm); })[0];
+      if (best !== S.song && Math.abs(best.bpm - S.spm) + 2 < Math.abs(S.song.bpm - S.spm)) setSong(best);
+    }
+    function setSong(song) {
+      S.song = song; render();
+      if (S.V.phase === 'run') {
+        toast('♪ 곡 전환 · ' + song.t + ' · ' + song.bpm + ' BPM');
+        flashSong();
+      }
+      sync();
+    }
+    function flashSong() {
+      var c = $('np7'); c.classList.remove('flash'); void c.offsetWidth; c.classList.add('flash');
+      S.over = true; clearTimeout(overT);
+      overT = setTimeout(function () { S.over = false; sync(); }, 2000);
+    }
+    function nextSong() {
+      if (S.mode !== 'auto') return;
+      var c = LIB.filter(function (l) { return l !== S.song && Math.abs(l.bpm - S.spm) <= 6; })
+        .sort(function (a, b) { return Math.abs(a.bpm - S.spm) - Math.abs(b.bpm - S.spm); });
+      if (c.length) setSong(c[S.nextI++ % c.length]);
+    }
+
+    // 자동 재생: 타임라인 시간(초)이 실제 1초에 얼마나 흐르는지
+    var SLOW_MARKS = [300, 480, 780, 1080, 1380]; // 워밍업→고강도, 고강도→조깅 경계(초). 앞뒤 5초는 정속
+    var AUTO_SPM = [[0, 168], [240, 172], [480, 181], [720, 176], [960, 162], [1200, 152], [1440, 170], [1620, 188], [1800, 178]];
+    function autoSpm(e) {
+      for (var i = 1; i < AUTO_SPM.length; i++) {
+        if (e <= AUTO_SPM[i][0]) { var a = AUTO_SPM[i - 1], b = AUTO_SPM[i]; return a[1] + (b[1] - a[1]) * (e - a[0]) / (b[0] - a[0]); }
+      }
+      return AUTO_SPM[AUTO_SPM.length - 1][1];
+    }
+    function rateAt(e) {
+      if (S.mode === 'interval') {
+        for (var i = 0; i < SLOW_MARKS.length; i++) if (Math.abs(e - SLOW_MARKS[i]) <= 5) return 1;
+        return 20;
+      }
+      return 40;
+    }
+    function stepPlay(dt) {
+      var t = S.t, K = (RUN1 - RUN0) * 1000 / TOTAL;
+      if (t <= 0) t = 0.5;
+      if (t < RUN0 * 1000) { S.rate = 1; t += 40 / 3 * dt; }
+      else if (t < RUN1 * 1000) {
+        var e = (t / 1000 - RUN0) / (RUN1 - RUN0) * TOTAL;
+        S.rate = rateAt(e); t += S.rate * dt * K;
+      } else { S.rate = 1; t += 10 * dt; }
+      if (t >= 1000) { t = 1000; S.play = false; }
+      S.t = t;
+      if (S.mode === 'auto' && t >= RUN0 * 1000 && t < RUN1 * 1000) {
+        S.spm = Math.round(autoSpm((t / 1000 - RUN0) / (RUN1 - RUN0) * TOTAL));
+        pickSong();
+      }
+      render(); sync();
+    }
+
+    // 입력
+    paceR.addEventListener('input', function () {
+      S.spm = +paceR.value; render(); sync();
+      clearTimeout(songT); songT = setTimeout(pickSong, 250);
+    });
+    tlR.addEventListener('input', function () { S.t = +tlR.value; render(); sync(); });
+    $('goStart').addEventListener('click', function () { S.play = false; S.t = RUN0 * 1000; render(); sync(); });
+    $('goEnd').addEventListener('click', function () { S.play = false; S.t = 1000; render(); sync(); });
+    $('playBtn').addEventListener('click', function () {
+      S.play = !S.play;
+      if (S.play) { if (S.t >= RUN1 * 1000) S.t = 0; S.over = false; S.rate = 1; }
+      render(); sync();
+    });
+    qa('.mode-tog button').forEach(function (b) {
+      b.addEventListener('click', function () { S.play = false; S.mode = b.dataset.mode; S.sel = true; S.over = false; render(); sync(); });
+    });
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('[data-next]')) { nextSong(); return; }
+      var pk = e.target.closest('[data-pick]');
+      if (pk) { S.play = false; S.mode = pk.dataset.pick; S.sel = true; S.over = false; render(); sync(); return; }
+      if (e.target.closest('[data-start]')) {
+        if (!S.sel) S.mode = 'auto';
+        goPhone({ auto: 'P-07', guide: 'P-05', interval: 'P-06' }[S.mode]); return;
+      }
+      var gs = e.target.closest('[data-gstep]');
+      if (gs) { S.gt = clamp(S.gt + (+gs.dataset.gstep), 170, 190); render(); return; }
+      var st = e.target.closest('[data-step]');
+      if (st) { S.hi = clamp(S.hi + (+st.dataset.step), 160, 195); render(); }
+    });
+
+    // 화면 이동 연동
+    function beforeGo(id) {
+      var prev = last.p; S.play = false;
+      if (id === 'P-04') S.t = 0;
+      else if (id === 'P-07' || id === 'P-08') {
+        if (id === 'P-08') S.mode = 'interval';
+        else if (prev === 'P-05') S.mode = 'guide';
+        else if (S.mode === 'interval') S.mode = 'auto';
+        S.over = false;
+        if (S.t < RUN0 * 1000 || S.t >= RUN1 * 1000) S.t = ['P-04', 'P-05', 'P-06'].indexOf(prev) >= 0 ? RUN0 * 1000 : 470;
+      } else if (id === 'P-09' || id === 'P-10' || id === 'P-11') S.t = 1000;
+    }
+    function afterGo() { render(); sync(true); }
+    function watchBtn(w) {
+      S.play = false;
+      if (w === 'W-02') S.t = 8;
+      else if (w === 'W-03') S.t = 940;
+      else if (w === 'W-08') S.t = 1000;
+      else { show(w, 'watch'); return; }
+      render(); sync();
+    }
+
+    // 달리는 사람
+    var ph = 0, bph = 0, gnd = 0, runK = 0, prev = performance.now();
+    var el = { nl: $('nearLeg'), fl: $('farLeg'), na: $('nearArm'), fa: $('farArm'), torso: $('torso'), head: $('head'), spd: $('spd'), g: $('gLine'), sky: $('skyPat') };
+    var mDot = $('mDot'), sDot = $('sDot');
+    function pts(node, a) { node.setAttribute('points', a[0] + ',' + a[1] + ' ' + a[2] + ',' + a[3] + ' ' + a[4] + ',' + a[5]); }
+    function pose(spm, a) {
+      var s = clamp((spm - 140) / 60, 0, 1);
+      var Th = (24 + 20 * s) * a * R, F = (55 + 22 * s) * a * R, Ca = (28 + 26 * s) * a * R, lean = (2 + 11 * s) * a * R, eb = (22 + 62 * a) * R;
+      function leg(p) { var th = Th * Math.sin(p), fl = F * (0.5 + 0.5 * Math.cos(p - 0.4)); return { th: th, fl: fl, v: L1 * Math.cos(th) + L2 * Math.cos(th - fl) }; }
+      var n = leg(ph), f = leg(ph + Math.PI);
+      var hy = G - Math.max(n.v, f.v) - 6;
+      function legPts(l) { var kx = HX + L1 * Math.sin(l.th), ky = hy + L1 * Math.cos(l.th); return [HX, hy, kx, ky, kx + L2 * Math.sin(l.th - l.fl), ky + L2 * Math.cos(l.th - l.fl)]; }
+      var sx = HX + T * Math.sin(lean), sy = hy - T * Math.cos(lean);
+      function armPts(p) { var ua = Ca * Math.sin(p), fa = ua + eb, ex = sx + A1 * Math.sin(ua), ey = sy + A1 * Math.cos(ua); return [sx, sy, ex, ey, ex + A2 * Math.sin(fa), ey + A2 * Math.cos(fa)]; }
+      pts(el.nl, legPts(n)); pts(el.fl, legPts(f)); pts(el.na, armPts(ph + Math.PI)); pts(el.fa, armPts(ph));
+      el.torso.setAttribute('x1', HX); el.torso.setAttribute('y1', hy); el.torso.setAttribute('x2', sx); el.torso.setAttribute('y2', sy);
+      el.head.setAttribute('cx', sx + 19 * Math.sin(lean) + 2); el.head.setAttribute("cy", sy - 19 * Math.cos(lean));
+      el.spd.setAttribute('opacity', (a * s * 0.7).toFixed(2));
+    }
+    function frame(now) {
+      var dt = Math.min(0.05, (now - prev) / 1000); prev = now;
+      if (S.play) stepPlay(dt);
+      var V = S.V, running = V.phase === 'run';
+      runK += ((running ? 1 : 0) - runK) * Math.min(1, dt * 5);
+      if (!running && runK < 0.003) runK = 0;
+      ph += 2 * Math.PI * dt * (V.spm / 120) * runK;
+      gnd += dt * V.spm * runK * 2.4;
+      if (running) bph += 2 * Math.PI * dt * V.song.bpm / 60;
+      pose(V.spm, runK);
+      el.g.setAttribute('stroke-dashoffset', gnd.toFixed(1));
+      el.sky.setAttribute('patternTransform', 'translate(' + (-gnd * 0.25).toFixed(1) + ' 0)');
+      var mp = running ? Math.pow((1 + Math.cos(bph)) / 2, 3) : 0;
+      var sp = Math.pow((1 - Math.cos(2 * ph)) / 2, 3) * runK;
+      mDot.style.transform = 'scale(' + (1 + 0.7 * mp).toFixed(2) + ')'; mDot.style.opacity = running ? (0.4 + 0.6 * mp).toFixed(2) : 0.3;
+      sDot.style.transform = 'scale(' + (1 + 0.7 * sp).toFixed(2) + ')'; sDot.style.opacity = (0.3 + 0.7 * sp).toFixed(2);
+      requestAnimationFrame(frame);
+    }
+
+    render();
+    requestAnimationFrame(frame);
+    return { beforeGo: beforeGo, afterGo: afterGo, watchBtn: watchBtn };
+  }
+
+  show('P-01', 'iphone'); show('W-01', 'watch');
+  if (embedded) {
+    var phone = embedded.charAt(0) === 'P';
+    document.documentElement.classList.add('embed');
+    document.getElementById(phone ? 'watch' : 'iphone').style.display = 'none';
+    show(embedded, phone ? 'iphone' : 'watch');
+    if (query.get('marks') === '1') annotate(true);
+  } else {
+    sim = makeSim();
+  }
+</script>
+</body>
+</html>

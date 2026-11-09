@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페이스비츠 브리프</title>
+<style>
+  @page { size: A4; margin: 11mm 12mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: #111; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    font-size: 8.7pt;
+    line-height: 1.42;
+    word-break: keep-all;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .title {
+    background: #000; color: #fff; text-align: center;
+    font-size: 12.5pt; font-weight: 700; letter-spacing: .12em;
+    padding: 6px 0; margin-bottom: 6px;
+  }
+  table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  td { border: 1px solid #222; padding: 3px 7px; vertical-align: middle; }
+  .meta { margin-bottom: 6px; }
+  .meta td { text-align: center; font-weight: 700; padding: 4px 7px; }
+  .meta td.v { font-weight: 500; }
+  .label { width: 21%; background: #e9e9e9; text-align: center; font-weight: 700; }
+  ul { margin: 0; padding-left: 13px; }
+  li { margin: 1px 0; }
+  .feature { margin: 2px 0 4px; }
+  .feature b { display: block; font-size: 9pt; }
+  .feature span { display: block; padding-left: 9px; }
+  code { font-family: Menlo, Consolas, monospace; font-size: .92em; color: #1747a6; }
+</style>
+</head>
+<body>
+  <div class="title">프로젝트 브리프 작성을 통한 핵심 내용 파악</div>
+
+  <table class="meta">
+    <colgroup><col style="width:21%"><col style="width:32%"><col style="width:17%"><col style="width:30%"></colgroup>
+    <tr>
+      <td style="background:#e9e9e9">작성자</td><td class="v">김대환, 안태현</td>
+      <td style="background:#e9e9e9">작성일</td><td class="v">2026년 11월 9일</td>
+    </tr>
+  </table>
+
+  <table>
+    <tr>
+      <td class="label">프로젝트명</td>
+      <td><b>페이스비츠 (PaceBeats)</b> : 러닝 케이던스(SPM)에 맞춰 음악을 선곡하는 iPhone·Galaxy·스마트워치 앱</td>
+    </tr>
+    <tr>
+      <td class="label">프로젝트 목표</td>
+      <td><ul>
+        <li><b>Goal 1. [케이던스-음악 동기화]</b> 휴대폰과 워치로 측정한 케이던스와 BPM 카탈로그를 결합해, 재생 시간의 70% 이상을 ±3 BPM 이내, 90% 이상을 ±5 BPM 이내로 일치</li>
+        <li><b>Goal 2. [러닝 몰입 및 케이던스 유도]</b> 러닝 중 수동 음악 조작을 세션당 1회 이하로 줄이고, 목표 ±3 SPM 유지 시간을 늘리며, SUS 68점 이상 달성</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td class="label">기대 효과</td>
+      <td><ul>
+        <li><b>사용자 측면:</b> 달리는 동안 선곡 조작 부담을 줄이고, 신체 리듬에 맞는 청각 피드백으로 일정한 케이던스와 몰입을 유지</li>
+        <li><b>서비스 측면:</b> 곡별 리듬 반응 데이터를 쌓아 모방이 어려운 개인화를 만들고, 러닝 커뮤니티와 음악 플랫폼을 잇는 콘텐츠 접점 확보</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td class="label">핵심 타깃</td>
+      <td><ul>
+        <li><b>User 1. (정기 러너):</b> 주 2~3회 이상 러닝을 하며, 목표 케이던스를 안정적으로 유지하고자 하는 2030 러너</li>
+        <li><b>User 2. (음악 중심 러너):</b> 휴대폰, 워치, 무선 이어폰으로 달리며 Spotify 또는 Apple Music을 구독하고, 박자가 맞는 음악을 원하는 사용자</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td class="label">매체</td>
+      <td>스마트폰 (iPhone, Galaxy), 스마트워치 (Apple Watch, Galaxy Watch), 무선 이어폰</td>
+    </tr>
+    <tr>
+      <td class="label">저작물의 형식</td>
+      <td>모바일 애플리케이션과 워치 앱의 UI 프로토타입 (iPhone 12개, Apple Watch 8개 화면, 샘플 데이터 기반. Galaxy·Galaxy Watch는 같은 구조 적용)</td>
+    </tr>
+    <tr>
+      <td class="label">수행 조건</td>
+      <td><ul>
+        <li>휴대폰과 워치에서 시작, 음악 제어, 러닝 지표 확인이 이어지는 일관된 화면 흐름 제공</li>
+        <li>iPhone은 Spotify·Apple Music, Galaxy는 Spotify 재생 연동, Deezer·GetSongBPM 기반 BPM 카탈로그 300곡 구성</li>
+        <li>Apple <code>CMPedometer</code>, Wear OS Health Services 기반 케이던스 측정, 변화 반영 10초 이내</li>
+        <li>야외 러닝 시인성을 위한 고대비 다크모드 및 원터치 제스처 UI 적용</li>
+        <li>구간 전환 시 음성 안내와 워치 햅틱 제공, 음악 서비스 표기 규정 준수</li>
+      </ul></td>
+    </tr>
+    <tr>
+      <td class="label">내용</td>
+      <td>
+        <div class="feature"><b>▪ 1. 케이던스 오토 싱크(Auto-Sync)</b>
+          <span>- 15초 평활화한 케이던스에 맞춰 ±3 BPM 범위(부족 시 ±5 BPM, 하프타임 포함)의 곡을 선정하고, 곡 종료 전 다음 곡을 재생 대기열에 추가</span></div>
+        <div class="feature"><b>▪ 2. 케이던스 유도 모드</b>
+          <span>- 사용자가 목표 케이던스(예: 175 SPM)를 설정하면 곡 단위로 +2~3 SPM씩 올려 청각적으로 목표에 유도</span></div>
+        <div class="feature"><b>▪ 3. 인터벌 프리셋</b>
+          <span>- [워밍업 5분] → [고강도 3분] → [조깅 2분] 등 구간 전환에 맞춰 음성 카운트다운, 손목 진동, 곡 교체가 함께 진행</span></div>
+        <div class="feature"><b>▪ 4. 리듬 반응 개인화</b>
+          <span>- 장르와 청취 기록에 곡별 리듬 유지 점수를 더해 선곡하고 최근 재생곡 반복을 억제</span></div>
+        <div class="feature"><b>▪ 5. 러닝 리포트·크루 챌린지</b>
+          <span>- 경로, 구간별 페이스, 케이던스, 재생 곡을 이미지 카드로 저장·공유 (시작·종료 200m 경로 마스킹), 크루 BPM 일치 챌린지, Apple 건강·Health Connect 기록 내보내기</span></div>
+      </td>
+    </tr>
+    <tr>
+      <td class="label">일정</td>
+      <td>
+        <b>기획 및 UI 프로토타입 제작 (총 3주)</b>
+        <ul>
+          <li><b>[1주차]</b> 아이디어 개요 정리: 프로젝트 목표, 저작물의 형식, 핵심 기능, 타깃 정의</li>
+          <li><b>[2주차]</b> 포지셔닝 정리: 인접 서비스 분석, 구매 요인 평가, 포지셔닝 맵, SWOT 및 경쟁력 전략 도출</li>
+          <li><b>[3주차]</b> 컨셉과 상세기획: 톤앤매너, 전체 플로우, 스토리보드, iPhone·Apple Watch 대표 UI 제작</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>

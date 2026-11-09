@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페이스비츠 상세설계서</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 16mm; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #fff; color: #161616; }
+  body {
+    font-family: "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    font-size: 10pt;
+    line-height: 1.55;
+    word-break: keep-all;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .cover { padding-bottom: 12px; border-bottom: 2px solid #000; margin-bottom: 18px; }
+  .cover h1 { font-size: 22pt; margin: 0 0 4px; letter-spacing: -.01em; }
+  .cover p { margin: 2px 0; color: #444; }
+  h2 { font-size: 14pt; margin: 22px 0 8px; padding-bottom: 3px; border-bottom: 1px solid #999; break-after: avoid; }
+  h3 { font-size: 11pt; margin: 14px 0 5px; break-after: avoid; }
+  p { margin: 5px 0; }
+  ul, ol { margin: 4px 0; padding-left: 18px; }
+  li { margin: 2px 0; }
+  table { width: 100%; border-collapse: collapse; margin: 7px 0 10px; font-size: 9pt; }
+  th, td { border: 1px solid #888; padding: 4px 6px; vertical-align: top; text-align: left; }
+  th { background: #ececec; font-weight: 700; }
+  tr { break-inside: avoid; }
+  code { font-family: Menlo, Consolas, monospace; font-size: .9em; }
+  pre { font-family: Menlo, Consolas, monospace; font-size: 8.4pt; line-height: 1.45; background: #f4f4f4; border: 1px solid #ccc; padding: 7px 9px; white-space: pre-wrap; }
+  .small { font-size: 8.6pt; color: #444; }
+  ol.toc { columns: 2; font-size: 9.5pt; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>페이스비츠 상세설계서</h1>
+  <p>러닝 케이던스에 맞춰 음악을 선곡하는 iPhone·Galaxy·스마트워치 앱</p>
+  <p>작성자: 김대환, 안태현 · 작성일: 2026-11-09</p>
+</div>
+
+<ol class="toc">
+  <li>프로젝트 정의</li><li>제작 범위</li><li>서비스 구성</li><li>페르소나·시나리오</li>
+  <li>시스템 구조</li><li>카탈로그 데이터</li><li>선곡·제어 규칙</li><li>기능 명세</li>
+  <li>화면 목록</li><li>디자인 시스템</li><li>비기능 요구사항</li><li>성과 지표</li><li>일정</li>
+</ol>
+
+<h2>1. 프로젝트 정의</h2>
+<p><b>휴대폰과 워치로 러닝 케이던스를 측정해, BPM 카탈로그에서 곡을 골라 Spotify 또는 Apple Music으로 재생하는 러닝 음악 앱.</b></p>
+<p>컨셉은 "발걸음이 플레이 버튼이 됩니다"이다. 러너가 조작하지 않아도 자신의 리듬에 맞는 음악이 이어지는 경험을 제공한다.</p>
+
+<h2>2. 제작 범위</h2>
+<ul>
+  <li>iPhone 화면 12개, Apple Watch 화면 8개의 UI 프로토타입</li>
+  <li>Galaxy·Galaxy Watch는 같은 화면 구조와 디자인 체계를 적용하며 전용 화면은 별도로 설계하지 않음</li>
+  <li>샘플 데이터로 화면 이동을 체험하는 형태. 측정값과 곡 정보는 예시 값으로 표시</li>
+  <li>기능 F1 오토 싱크, F2 케이던스 유도, F3 인터벌, F4 리듬 반응 개인화, F5 리포트·크루 챌린지의 화면 설계</li>
+</ul>
+
+<h2>3. 서비스 구성</h2>
+<table>
+  <tr><th style="width:24%">영역</th><th>구성</th></tr>
+  <tr><td>케이던스 측정</td><td>워치 착용 시 워치 센서를, 미착용 시 휴대폰 센서를 사용. Apple은 <code>CMPedometer</code>, Galaxy Watch는 Wear OS Health Services <code>STEPS_PER_MINUTE</code>, Galaxy 휴대폰은 걸음 센서</td></tr>
+  <tr><td>BPM 데이터</td><td>Deezer와 GetSongBPM을 교차 확인하고 수동 탭 검증을 거친 카탈로그 300곡</td></tr>
+  <tr><td>선곡</td><td>카탈로그 안에서 BPM, Energy, 장르, 재생 이력을 점수화</td></tr>
+  <tr><td>재생</td><td>iPhone은 Spotify Web API Player 또는 Apple MusicKit, Galaxy는 Spotify Web API Player로 재생, 다음 곡, 대기열 추가를 제어</td></tr>
+  <tr><td>기기 연동</td><td>Apple은 WatchConnectivity, Galaxy는 Wear OS Data Layer로 휴대폰과 워치의 세션 상태를 동기화</td></tr>
+  <tr><td>음성·햅틱</td><td>Apple은 <code>AVSpeechSynthesizer</code>, <code>.duckOthers</code>, WatchKit 햅틱. Galaxy는 <code>TextToSpeech</code>, Audio Focus 덕킹, Wear OS 진동</td></tr>
+  <tr><td>브랜드 표기</td><td>곡 정보와 함께 사용 중인 음악 서비스의 로고·링크를 표시하고, 아트워크는 원형을 유지</td></tr>
+  <tr><td>기록 연동</td><td>러닝 기록을 Apple 건강과 Health Connect로 내보내 기존 러닝 앱과 함께 사용</td></tr>
+  <tr><td>Galaxy 구현</td><td>Kotlin, Jetpack Compose, Compose for Wear OS로 같은 화면 구조와 디자인 값을 적용</td></tr>
+</table>
+
+<h2>4. 페르소나·시나리오</h2>
+<table>
+  <tr><th style="width:18%">페르소나</th><th>특성</th><th>핵심 니즈</th></tr>
+  <tr><td>정기 러너</td><td>29세 직장인, 주 3회 러닝, 하프 마라톤 준비, Apple Watch 사용</td><td>목표 케이던스 유지, 휴대폰을 보지 않는 인터벌 훈련</td></tr>
+  <tr><td>음악 중심 러너</td><td>26세 대학원생, 주 2회 러닝, Spotify 또는 Apple Music 구독</td><td>좋아하는 장르, 발과 맞는 박자, 기록 공유</td></tr>
+</table>
+<h3>대표 시나리오</h3>
+<ol>
+  <li>휴대폰에서 음악 서비스를 연결하고 장르를 고른다.</li>
+  <li>휴대폰 또는 워치에서 모드를 선택해 러닝을 시작한다.</li>
+  <li>달리는 동안 앱이 케이던스에 맞춰 곡을 잇고, 사용자는 워치로 지표와 음악을 확인한다.</li>
+  <li>종료 후 워치에서 요약을 보고, 휴대폰에서 리포트를 공유한다.</li>
+</ol>
+
+<h2>5. 시스템 구조</h2>
+<table>
+  <tr><th style="width:26%">모듈</th><th style="width:14%">기기</th><th>책임</th></tr>
+  <tr><td><code>CadenceService</code></td><td>워치, 휴대폰</td><td>케이던스 구독, 15초 이동 중앙값, 정지 판정</td></tr>
+  <tr><td><code>SessionSync</code></td><td>워치, 휴대폰</td><td>모드, 구간, 재생 곡, 일시정지 상태 동기화</td></tr>
+  <tr><td><code>CatalogStore</code></td><td>휴대폰</td><td>번들 JSON 조회</td></tr>
+  <tr><td><code>TrackSelector</code></td><td>휴대폰</td><td>후보 필터링, 점수화, 모드별 목표 SPM 계산</td></tr>
+  <tr><td><code>MusicProvider</code></td><td>휴대폰</td><td>Spotify·Apple Music 공통 재생 인터페이스, 인증, 호출 직렬화, 상태 조회</td></tr>
+  <tr><td><code>RhythmScorer</code></td><td>휴대폰</td><td>곡별 케이던스 안정도와 목표 유지율을 사용자별로 점수화</td></tr>
+  <tr><td><code>SessionRecorder</code></td><td>휴대폰</td><td>GPS 경로, 케이던스, 재생 곡 타임라인 기록</td></tr>
+  <tr><td><code>ReportRenderer</code></td><td>휴대폰</td><td>지도, 차트, 곡 목록 이미지 렌더링, 경로 마스킹</td></tr>
+</table>
+<pre>워치 센서·조작 ⇄ SessionSync ⇄ 휴대폰 앱
+휴대폰 앱: CadenceService → TrackSelector ← CatalogStore, RhythmScorer
+                                ↓
+                     MusicProvider → Spotify 또는 Apple Music 재생
+GPS → SessionRecorder → ReportRenderer → 이미지 저장·공유</pre>
+
+<h2>6. 카탈로그 데이터</h2>
+<table>
+  <tr><th style="width:22%">필드</th><th style="width:15%">타입</th><th>설명</th></tr>
+  <tr><td><code>spotify_uri</code></td><td>string</td><td>Spotify 재생용 URI</td></tr>
+  <tr><td><code>apple_music_id</code></td><td>string</td><td>Apple Music 재생용 ID</td></tr>
+  <tr><td><code>isrc</code></td><td>string</td><td>소스 간 매칭 키</td></tr>
+  <tr><td><code>duration_ms</code></td><td>int</td><td>곡 종료 시점 계산</td></tr>
+  <tr><td><code>bpm</code></td><td>float</td><td>확정 BPM</td></tr>
+  <tr><td><code>bpm_source</code></td><td>enum</td><td><code>deezer</code>, <code>getsongbpm</code>, <code>manual</code></td></tr>
+  <tr><td><code>verified</code></td><td>bool</td><td>수동 탭 검증 여부</td></tr>
+  <tr><td><code>energy</code></td><td>enum</td><td><code>high</code>, <code>mid</code>, <code>low</code></td></tr>
+  <tr><td><code>genres</code></td><td>string[]</td><td>온보딩 장르와 매칭</td></tr>
+</table>
+<p>화면에 표시하는 제목, 아티스트, 아트워크는 사용 중인 음악 서비스의 메타데이터를 사용한다.</p>
+
+<h2>7. 선곡·제어 규칙</h2>
+<table>
+  <tr><th style="width:22%">모드</th><th>목표 SPM</th></tr>
+  <tr><td>오토 싱크</td><td>평활화된 현재 SPM</td></tr>
+  <tr><td>케이던스 유도</td><td>직전 곡 목표 + 2~3 SPM, 사용자 목표에서 고정. 설정 범위 150~190 SPM. 러너 케이던스의 2.5% 이내 템포 변화가 효과적이었다는 연구(Van Dyck et al., 2015)를 근거로 곡당 상승폭을 제한</td></tr>
+  <tr><td>인터벌</td><td>워밍업 165, 고강도 178, 조깅 160, 쿨다운 155 SPM</td></tr>
+</table>
+<pre>effective_bpm(track, target):
+    return track.bpm 와 track.bpm × 2 중 target에 더 가까운 값
+
+select(target, session):
+    pool = |effective_bpm - target| ≤ 3 인 곡
+    if pool 크기 &lt; 5: pool = |effective_bpm - target| ≤ 5 인 곡
+    return score가 가장 높은 곡
+
+score(track):
+    100 - 8 × |effective_bpm - target|
+    + energy 일치 15, 인접 구간 5
+    + 선택 장르 일치 10
+    + 청취 기록 상위 아티스트 10
+    + 곡별 리듬 유지 점수 × 0.2
+    - 세션 내 재생 이력 50</pre>
+<table>
+  <tr><th style="width:36%">이벤트</th><th>동작</th></tr>
+  <tr><td>세션 시작</td><td>첫 곡 재생, Watch 카운트다운과 진동</td></tr>
+  <tr><td>곡 종료 20초 전</td><td>다음 곡 1개를 선정해 대기열에 추가</td></tr>
+  <tr><td>현재 곡과 5 SPM 이상 차이 20초 지속</td><td>다음 곡 재선정</td></tr>
+  <tr><td>15 SPM 이상 차이 30초 지속</td><td>즉시 교체, 이후 60초 동안 재교체 금지</td></tr>
+  <tr><td>인터벌 구간 전환</td><td>3초 전 Watch 전체 화면 알림과 음성 안내, 곡 즉시 교체</td></tr>
+  <tr><td>100 SPM 미만 10초 지속</td><td>선곡 동결, 재개 시 해제</td></tr>
+</table>
+
+<h2>8. 기능 명세</h2>
+<table>
+  <tr><th style="width:18%">기능</th><th style="width:40%">요구사항</th><th>완료 기준</th></tr>
+  <tr><td><b>F1 오토 싱크</b></td><td>케이던스에 맞춰 다음 곡 자동 선정·재생</td><td>재생 시간의 70% 이상 ±3 BPM, 90% 이상 ±5 BPM</td></tr>
+  <tr><td><b>F2 케이던스 유도</b></td><td>목표 SPM 설정, 곡 단위 +2~3 SPM 상승</td><td>목표 ±3 SPM 유지 시간 비율 표시</td></tr>
+  <tr><td><b>F3 인터벌</b></td><td>프리셋 선택, 음성 안내, 워치 햅틱, 곡 교체</td><td>구간 전환 후 5초 이내 곡 교체</td></tr>
+  <tr><td><b>F4 리듬 반응 개인화</b></td><td>온보딩 장르, 청취 기록, 곡별 리듬 유지 점수, 반복 억제</td><td>선택 장르 비중 60% 이상, 러닝 5회 이후 점수 반영</td></tr>
+  <tr><td><b>F5 리포트·크루 챌린지</b></td><td>경로, 구간 페이스, SPM, 곡 목록 이미지 공유, 크루 BPM 일치 챌린지, 건강 앱 내보내기</td><td>시작·종료 200m 마스킹, 음악 서비스 표기 포함</td></tr>
+</table>
+
+<h2>9. 화면 목록</h2>
+<table>
+  <tr><th style="width:11%">ID</th><th style="width:24%">화면명</th><th>주요 요소</th></tr>
+  <tr><td>P-01</td><td>음악 서비스 연결</td><td>서비스 이름, 핵심 문구, Spotify·Apple Music 선택</td></tr>
+  <tr><td>P-02</td><td>장르 선택</td><td>장르 복수 선택, 선택 개수</td></tr>
+  <tr><td>P-03</td><td>러닝 준비</td><td>동작·위치 권한, 워치·음악 서비스 연결 상태</td></tr>
+  <tr><td>P-04</td><td>홈</td><td>지난 러닝 요약, 모드 카드 3종(선택 시 테두리), 러닝 시작</td></tr>
+  <tr><td>P-05</td><td>케이던스 유도</td><td>목표 SPM, 조절 버튼, 곡별 상승 그래프</td></tr>
+  <tr><td>P-06</td><td>인터벌 프리셋</td><td>프리셋 3종, 구간 타임라인, 목표 SPM</td></tr>
+  <tr><td>P-07</td><td>오토 싱크 러닝</td><td>실시간 SPM, 곡 BPM, 거리·페이스·심박, 재생 곡</td></tr>
+  <tr><td>P-08</td><td>인터벌 러닝</td><td>구간, 남은 시간, 현재·목표 SPM, 타임라인</td></tr>
+  <tr><td>P-09</td><td>러닝 리포트</td><td>마스킹 경로, 주요 지표, BPM 일치율</td></tr>
+  <tr><td>P-10</td><td>케이던스와 음악</td><td>SPM·BPM 차트, 재생 곡별 리듬 유지 점수</td></tr>
+  <tr><td>P-11</td><td>공유 카드</td><td>9:16 카드, 이미지 저장, 스토리 공유</td></tr>
+  <tr><td>P-12</td><td>설정</td><td>장르, 음악 서비스, 음성·햅틱, 경로 마스킹, 건강 앱 연동, 기록 삭제</td></tr>
+  <tr><td>W-01</td><td>대기</td><td>현재 모드, iPhone 연결, 시작</td></tr>
+  <tr><td>W-02</td><td>카운트다운</td><td>3초 카운트다운, 손목 진동</td></tr>
+  <tr><td>W-03</td><td>러닝</td><td>실시간 SPM, 곡 BPM, 거리·페이스</td></tr>
+  <tr><td>W-04</td><td>음악 제어</td><td>재생 곡, 일시정지, 다음 곡, Crown 볼륨</td></tr>
+  <tr><td>W-05</td><td>인터벌</td><td>구간, 남은 시간, 현재·목표 SPM, 진행 막대</td></tr>
+  <tr><td>W-06</td><td>구간 전환 알림</td><td>전체 화면 알림, 다음 구간, 목표 SPM</td></tr>
+  <tr><td>W-07</td><td>일시정지</td><td>재개, 종료</td></tr>
+  <tr><td>W-08</td><td>러닝 완료</td><td>거리, 시간, 평균 SPM, BPM 일치율</td></tr>
+</table>
+
+<h2>10. 디자인 시스템</h2>
+<table>
+  <tr><th style="width:26%">구분</th><th style="width:40%">폰트</th><th style="width:18%">사이즈</th><th>자간</th></tr>
+  <tr><td>iPhone 핵심 수치</td><td>SF Pro Heavy</td><td>112–136pt</td><td>-3%</td></tr>
+  <tr><td>iPhone 화면 제목</td><td>Apple SD Gothic Neo ExtraBold</td><td>28–30pt</td><td>-2%</td></tr>
+  <tr><td>iPhone 버튼</td><td>Apple SD Gothic Neo ExtraBold</td><td>20pt</td><td>0</td></tr>
+  <tr><td>iPhone 본문·캡션</td><td>Apple SD Gothic Neo Regular</td><td>13–16pt</td><td>0</td></tr>
+  <tr><td>Watch 핵심 수치</td><td>SF Pro Heavy</td><td>54–78pt</td><td>-3%</td></tr>
+  <tr><td>Watch 제목·라벨</td><td>Apple SD Gothic Neo Bold</td><td>12–21pt</td><td>0</td></tr>
+</table>
+<p>Galaxy·Galaxy Watch는 같은 크기 체계와 컬러를 기기 기본 서체로 적용한다.</p>
+<p>컬러: Black <code>#0A0B0D</code> 배경, Volt <code>#D4FF3A</code> 주요 동작·싱크, Coral <code>#FF5A3C</code> 고강도, Sky <code>#5CC8FF</code> 워밍업·쿨다운, White <code>#FFFFFF</code> 본문.</p>
+<p>톤앤매너: 역동적, 명료함, 몰입감. 한 화면에 가장 중요한 지표 하나만 크게 보여 준다.</p>
+
+<h2>11. 비기능 요구사항</h2>
+<table>
+  <tr><th style="width:18%">항목</th><th>요구사항</th></tr>
+  <tr><td>응답</td><td>케이던스 변화 반영 10초 이내</td></tr>
+  <tr><td>시인성</td><td>러닝 화면 주요 수치 고대비 대형 표시, 터치 영역 60pt 이상</td></tr>
+  <tr><td>배터리</td><td>GPS 정확도와 상태 조회 간격을 조절하는 절전 재생</td></tr>
+  <tr><td>개인정보</td><td>GPS는 기기에 저장, 공유 시 경로 마스킹, 기록 삭제 기능 제공</td></tr>
+  <tr><td>안전</td><td>주변 소리 인지 안내 문구 표시</td></tr>
+</table>
+
+<h2>12. 성과 지표</h2>
+<table>
+  <tr><th style="width:30%">지표</th><th>목표</th></tr>
+  <tr><td>BPM 일치율</td><td>±3 BPM 70% 이상, ±5 BPM 90% 이상</td></tr>
+  <tr><td>수동 조작</td><td>세션당 1회 이하</td></tr>
+  <tr><td>케이던스 유도</td><td>목표 ±3 SPM 유지 시간 증가</td></tr>
+  <tr><td>사용성</td><td>SUS 68 이상</td></tr>
+</table>
+
+<h2>13. 일정</h2>
+<table>
+  <tr><th style="width:14%">주차</th><th>작업</th></tr>
+  <tr><td>1주차</td><td>아이디어 개요 정리: 목표, 저작물의 형식, 핵심 기능, 타깃</td></tr>
+  <tr><td>2주차</td><td>포지셔닝 정리: 인접 서비스 분석, 구매 요인 평가, 포지셔닝 맵, SWOT, 경쟁력 전략</td></tr>
+  <tr><td>3주차</td><td>컨셉과 상세기획: 톤앤매너, 플로우, 스토리보드, UI 제작</td></tr>
+</table>
+
+</body>
+</html>
